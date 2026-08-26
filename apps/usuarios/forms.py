@@ -20,7 +20,7 @@ class UsuarioForm(forms.ModelForm):
     `UsuarioCreateForm` y `services.cambiar_password`)."""
 
     grupo = forms.ModelChoiceField(
-        label='grupo', queryset=listar_grupos(), required=False,
+        label='Grupo', queryset=listar_grupos(), required=False,
         help_text='vacío solo para el superadministrador de plataforma.',
     )
 

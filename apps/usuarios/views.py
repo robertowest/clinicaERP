@@ -134,9 +134,9 @@ class UsuarioReactivarView(StaffRequiredMixin, HtmxTriggerMixin, View):
 
 
 # --- UsuarioClinica (accesos por clínica) ------------------------------------
-# página propia (no encaja en el patrón crud/list.html: no es un listado paginado con
-# filtros, sino la gestión de las pocas asignaciones de un único usuario). el formulario
-# de alta y la tabla de bajas comparten la misma respuesta parcial htmx.
+# página propia, no encaja en el patrón crud/list.html: no es un listado paginado con
+# filtros, sino la gestión de las pocas asignaciones de un único usuario.
+# El formulario de alta y la tabla de bajas comparten la misma respuesta parcial htmx.
 
 
 class UsuarioAccesosView(StaffRequiredMixin, View):

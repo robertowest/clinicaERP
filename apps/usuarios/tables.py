@@ -2,7 +2,7 @@
 
 import django_tables2 as tables
 
-from apps.core.utils import BooleandColumn
+from apps.core.utils import ActiveColumn, BooleandColumn
 from apps.usuarios.models import CustomUser
 
 ATRIBUTOS_TABLA = {'class': 'table table-hover align-middle mb-0'}
@@ -14,7 +14,7 @@ class UsuarioTable(tables.Table):
     email = tables.Column(verbose_name='eMail', orderable=False)
     grupo = tables.Column(accessor='grupo__nombre', verbose_name='grupo', default='—')
     is_staff = BooleandColumn(verbose_name='Empleado', orderable=False)
-    is_active = BooleandColumn(verbose_name='estado', orderable=False)
+    is_active = ActiveColumn(verbose_name='estado', orderable=False)
     acciones = tables.TemplateColumn(
         template_name='crud/_acciones_columna.html',
         orderable=False,

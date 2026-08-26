@@ -2,14 +2,14 @@
 
 import django_tables2 as tables
 
-from apps.core.utils import BooleandColumn
+from apps.core.utils import ActiveColumn
 from apps.organizacion.models import Clinica, Especialidad, Grupo
 
 ATRIBUTOS_TABLA = {'class': 'table table-hover align-middle mb-0'}
 
 
 class GrupoTable(tables.Table):
-    is_active = BooleandColumn(verbose_name='estado')
+    is_active = ActiveColumn(verbose_name='estado')
     acciones = tables.TemplateColumn(
         template_name='crud/_acciones_columna.html',
         orderable=False,
@@ -26,7 +26,7 @@ class GrupoTable(tables.Table):
 
 
 class EspecialidadTable(tables.Table):
-    is_active = BooleandColumn(verbose_name='estado')
+    is_active = ActiveColumn(verbose_name='estado')
     acciones = tables.TemplateColumn(
         template_name='crud/_acciones_columna.html',
         orderable=False,
@@ -44,7 +44,7 @@ class EspecialidadTable(tables.Table):
 
 class ClinicaTable(tables.Table):
     grupo = tables.Column(accessor='grupo__nombre', verbose_name='grupo')
-    is_active = BooleandColumn(verbose_name='estado')
+    is_active = ActiveColumn(verbose_name='estado')
     acciones = tables.TemplateColumn(
         template_name='crud/_acciones_columna.html',
         orderable=False,
