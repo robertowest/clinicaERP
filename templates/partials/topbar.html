@@ -1,0 +1,19 @@
+<header class="erp-topbar d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+        <button id="erp-toggle-sidebar" class="btn btn-sm btn-outline-secondary d-lg-none">
+            <i class="bi bi-list"></i>
+        </button>
+        <h1 class="h5 mb-0">{% block titulo_pagina %}{{ titulo }}{% endblock %}</h1>
+    </div>
+    {% if user.is_authenticated %}
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-secondary small">{{ user.get_username }}</span>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-box-arrow-right"></i> Salir
+                </button>
+            </form>
+        </div>
+    {% endif %}
+</header>

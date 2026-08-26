@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Inicio · ERP Clínica{% endblock %}
+{% block titulo_pagina %}Inicio{% endblock %}
+
+{% block content %}
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a href="{% url 'organizacion:grupo-list' %}" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-diagram-3 fs-2 text-primary"></i>
+                        <h2 class="h5 mt-3 mb-1 text-body">Grupos</h2>
+                        <p class="text-secondary mb-0">Grupos empresariales o médicos.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'organizacion:clinica-list' %}" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-building fs-2 text-primary"></i>
+                        <h2 class="h5 mt-3 mb-1 text-body">Clínicas</h2>
+                        <p class="text-secondary mb-0">Sedes pertenecientes a cada grupo.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="{% url 'organizacion:especialidad-list' %}" class="text-decoration-none">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-clipboard2-pulse fs-2 text-primary"></i>
+                        <h2 class="h5 mt-3 mb-1 text-body">Especialidades</h2>
+                        <p class="text-secondary mb-0">Catálogo global de especialidades médicas.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+{% endblock %}

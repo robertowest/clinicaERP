@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags django_tables2 %}
+
+{% block titulo %}{{ titulo }} · ERP Clínica{% endblock %}
+{% block titulo_pagina %}{{ titulo }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-secondary mb-0">Gestión de {{ titulo|lower }}.</p>
+        {% if url_crear %}
+            {% if crear_en_pagina_completa %}
+                <a href="{{ url_crear }}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Nuevo
+                </a>
+            {% else %}
+                <button type="button" class="btn btn-primary"
+                        hx-get="{{ url_crear }}" hx-target="#modal-crud-content">
+                    <i class="bi bi-plus-lg"></i> Nuevo
+                </button>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <div id="lista-wrapper" hx-boost="true" hx-target="#tabla-container"
+         hx-select="#tabla-container" hx-swap="outerHTML" hx-push-url="true">
+
+        {% if filter %}
+            <form id="filtro-form" method="get" class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        {% for field in filter.form %}
+                            {% comment " quitamos el div para poder determinar el tamaño desde filters.py" %}
+                            <div style="flex: 0 0 200px;">
+                            </div>
+                            {% endcomment %}
+                            {{ field|as_crispy_field }}
+                        {% endfor %}
+                        <button type="submit" class="btn btn-outline-primary ms-auto">
+                            <i class="bi bi-funnel"></i> Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-body p-0" id="tabla-container"
+                 hx-get="{{ request.path }}" hx-select="#tabla-container" hx-swap="outerHTML"
+                 hx-trigger="refrescar-lista from:body" hx-include="#filtro-form">
+                {% render_table table %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

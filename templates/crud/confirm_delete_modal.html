@@ -1,0 +1,21 @@
+<div class="modal-header">
+    <h5 class="modal-title">{{ titulo }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+<form hx-post="{{ request.path }}" hx-target="#modal-crud-content" hx-swap="innerHTML">
+    <div class="modal-body">
+        <p>
+            ¿Confirmas que quieres desactivar <strong>{{ object }}</strong>?
+            El registro no se borrará, quedará marcado como inactivo y podrá reactivarse
+            más adelante.
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancelar
+        </button>
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-slash-circle"></i> Desactivar
+        </button>
+    </div>
+</form>

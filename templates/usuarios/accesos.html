@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Accesos de {{ usuario }} · ERP Clínica{% endblock %}
+{% block titulo_pagina %}Accesos de {{ usuario }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-secondary mb-0">
+            Clínicas en las que <strong>{{ usuario }}</strong> puede trabajar y el rol que tiene en cada una.
+        </p>
+        <a href="{% url 'usuarios:usuario-list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a usuarios
+        </a>
+    </div>
+
+    {% include 'usuarios/_accesos_tabla.html' %}
+{% endblock %}

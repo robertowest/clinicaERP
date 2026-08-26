@@ -1,0 +1,46 @@
+<div class="d-flex gap-1 justify-content-end">
+    <button type="button" class="btn btn-sm btn-outline-secondary" title="Ver"
+            hx-get="{% url url_prefix|add:'-detalle' record.pk %}" hx-target="#modal-crud-content"
+            hx-select="unset" hx-swap="unset" hx-push-url="unset">
+        <i class="bi bi-eye"></i>
+    </button>
+
+    {% if request.user.is_staff %}
+        {% if edicion_pagina_completa %}
+            <a class="btn btn-sm btn-outline-secondary" title="Editar"
+               href="{% url url_prefix|add:'-editar' record.pk %}">
+                <i class="bi bi-pencil"></i>
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar"
+                    hx-get="{% url url_prefix|add:'-editar' record.pk %}"
+                    hx-target="#modal-crud-content"
+                    hx-select="unset" hx-swap="unset" hx-push-url="unset">
+                <i class="bi bi-pencil"></i>
+            </button>
+        {% endif %}
+
+        {% if mostrar_gestion_accesos %}
+            <a class="btn btn-sm btn-outline-primary" title="Accesos por clínica"
+               href="{% url url_prefix|add:'-accesos' record.pk %}">
+                <i class="bi bi-key"></i>
+            </a>
+        {% endif %}
+
+        {% if record.is_active %}
+            <button type="button" class="btn btn-sm btn-outline-danger" title="Desactivar"
+                    hx-get="{% url url_prefix|add:'-eliminar' record.pk %}"
+                    hx-target="#modal-crud-content"
+                    hx-select="unset" hx-swap="unset" hx-push-url="unset">
+                <i class="bi bi-slash-circle"></i>
+            </button>
+        {% else %}
+            <button type="button" class="btn btn-sm btn-outline-success" title="Reactivar"
+                    hx-post="{% url url_prefix|add:'-reactivar' record.pk %}" hx-swap="none"
+                    hx-push-url="unset"
+                    hx-confirm="¿Reactivar este registro?">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </button>
+        {% endif %}
+    {% endif %}
+</div>

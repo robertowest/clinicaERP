@@ -1,0 +1,18 @@
+{% load crispy_forms_tags %}
+<div class="modal-header">
+    <h5 class="modal-title">{{ titulo }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+</div>
+<form hx-post="{{ request.path }}" hx-target="#modal-crud-content" hx-swap="innerHTML">
+    <div class="modal-body">
+        {% crispy form %}
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Guardar
+        </button>
+    </div>
+</form>
