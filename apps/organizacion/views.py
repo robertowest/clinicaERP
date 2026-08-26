@@ -229,7 +229,7 @@ class ClinicaListView(LoginRequiredMixin, ListaFiltradaMixin, SingleTableMixin, 
     paginate_by = 20
     titulo = 'Clínicas'
     url_crear_name = 'organizacion:clinica-crear'
-    # crear_en_pagina_completa = True
+    crear_en_pagina_completa = True
 
     def get_queryset(self):
         return services.listar_clinicas()

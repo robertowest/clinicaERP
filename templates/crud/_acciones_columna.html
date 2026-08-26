@@ -7,7 +7,7 @@
 
     {% if request.user.is_staff %}
         {% if edicion_pagina_completa %}
-            <a class="btn btn-sm btn-outline-secondary" title="Editar"
+            <a class="btn btn-sm btn-outline-secondary" title="Editar" hx-boost="false"
                href="{% url url_prefix|add:'-editar' record.pk %}">
                 <i class="bi bi-pencil"></i>
             </a>
@@ -21,7 +21,7 @@
         {% endif %}
 
         {% if mostrar_gestion_accesos %}
-            <a class="btn btn-sm btn-outline-primary" title="Accesos por clínica"
+            <a class="btn btn-sm btn-outline-primary" title="Accesos por clínica" hx-boost="false"
                href="{% url url_prefix|add:'-accesos' record.pk %}">
                 <i class="bi bi-key"></i>
             </a>
