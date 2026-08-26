@@ -36,7 +36,7 @@ class UsuarioListView(StaffRequiredMixin, ListaFiltradaMixin, SingleTableMixin, 
     paginate_by = 20
     titulo = 'Usuarios'
     url_crear_name = 'usuarios:usuario-crear'
-    crear_en_pagina_completa = True
+    crear_en_pagina_completa = False
 
     def get_queryset(self):
         return services.listar_usuarios()
@@ -72,7 +72,7 @@ class UsuarioDetalleView(StaffRequiredMixin, DetailView):
 
 class UsuarioCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
     form_class = UsuarioCreateForm
-    template_name = 'crud/form_page.html'
+    template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('usuarios:usuario-list')
     titulo = 'Nuevo usuario'
     url_cancelar_name = 'usuarios:usuario-list'
@@ -94,7 +94,7 @@ class UsuarioCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
 
 class UsuarioUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
     form_class = UsuarioForm
-    template_name = 'crud/form_page.html'
+    template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('usuarios:usuario-list')
     titulo = 'Editar usuario'
     url_cancelar_name = 'usuarios:usuario-list'

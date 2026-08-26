@@ -21,7 +21,7 @@ class UsuarioTable(tables.Table):
         verbose_name='',
         extra_context={
             'url_prefix': 'usuarios:usuario',
-            'edicion_pagina_completa': True,
+            'edicion_pagina_completa': False,
             'mostrar_gestion_accesos': True,
         },
     )
