@@ -36,7 +36,6 @@ class UsuarioListView(StaffRequiredMixin, ListaFiltradaMixin, SingleTableMixin, 
     paginate_by = 20
     titulo = 'Usuarios'
     url_crear_name = 'usuarios:usuario-crear'
-    crear_en_pagina_completa = False
 
     def get_queryset(self):
         return services.listar_usuarios()
@@ -70,12 +69,12 @@ class UsuarioDetalleView(StaffRequiredMixin, DetailView):
         return context
 
 
-class UsuarioCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
+class UsuarioCreateView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, CreateView):
     form_class = UsuarioCreateForm
     template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('usuarios:usuario-list')
-    titulo = 'Nuevo usuario'
     url_cancelar_name = 'usuarios:usuario-list'
+    titulo = 'Nuevo usuario'
 
     def form_valid(self, form):
         datos = form.cleaned_data
@@ -88,11 +87,12 @@ class UsuarioCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
         except UsuarioDuplicadoError as exc:
             form.add_error('username', str(exc))
             return self.form_invalid(form)
-        messages.success(self.request, f'Usuario «{self.object}» creado.')
-        return HttpResponseRedirect(self.get_success_url())
+        # messages.success(self.request, f'Usuario «{self.object}» creado.')
+        # return HttpResponseRedirect(self.get_success_url())
+        return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class UsuarioUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
+class UsuarioUpdateView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, UpdateView):
     form_class = UsuarioForm
     template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('usuarios:usuario-list')
@@ -109,7 +109,8 @@ class UsuarioUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
             form.add_error('username', str(exc))
             return self.form_invalid(form)
         messages.success(self.request, f'Usuario «{self.object}» actualizado.')
-        return HttpResponseRedirect(self.get_success_url())
+        # return HttpResponseRedirect(self.get_success_url())
+        return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
 class UsuarioBajaView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):

@@ -48,7 +48,7 @@ Ejemplo de referencia: `GrupoCreateView`/`GrupoUpdateView` en `apps/organizacion
        template_name = 'crud/form_modal.html'
        success_url = reverse_lazy('app:x-list')
        titulo = 'Nuevo x'
-
+   
        def form_valid(self, form):
            try:
                self.object = services.crear_x(**form.cleaned_data)
@@ -185,7 +185,18 @@ class UsuarioListView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, 
 
 class UsuarioCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
     template_name = 'crud/form_modal.html'              # NO MODAL: crud/form_page.html
+    ...
+    def form_valid(self, form):
+    	# MODAL
+		return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
+		# NO MODAL
+        return HttpResponseRedirect(self.get_success_url())
 
 class UsuarioUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
     template_name = 'crud/form_modal.html'              # NO MODAL: crud/form_page.html
-``
+    ...
+    def form_valid(self, form):
+    	# MODAL
+		return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
+		# NO MODAL
+        return HttpResponseRedirect(self.get_success_url())
