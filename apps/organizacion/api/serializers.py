@@ -19,13 +19,24 @@ class EspecialidadSerializer(serializers.ModelSerializer):
 
 
 class ClinicaSerializer(serializers.ModelSerializer):
-    """el queryset de los campos relacionados se obtiene vía services.py, nunca de Model.objects."""
+    """el queryset de los campos relacionados se obtiene vía services.py, nunca de Model.objects.
+
+    el queryset de `grupo` se acota al alcance del usuario autenticado en `__init__` (nunca a
+    todos los grupos de la plataforma): evita que, por ejemplo, un `GROUP_ADMIN` cree o
+    reasigne una clínica a un grupo ajeno enviando su id directamente en el payload.
+    """
 
     grupo = serializers.PrimaryKeyRelatedField(queryset=services.listar_grupos())
     grupo_nombre = serializers.CharField(source='grupo.nombre', read_only=True)
     especialidades = serializers.PrimaryKeyRelatedField(
         many=True, required=False, queryset=services.listar_especialidades(),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request is not None and request.user.is_authenticated:
+            self.fields['grupo'].queryset = services.listar_grupos_visibles_para(request.user)
 
     class Meta:
         model = Clinica

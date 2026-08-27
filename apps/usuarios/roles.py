@@ -28,11 +28,16 @@ PERMISOS_POR_ROL = {
     Roles.SUPERADMIN: {'*'},
     Roles.GROUP_ADMIN: {
         'users.manage',
+        'groups.view', 'groups.manage',
+        'clinics.view', 'clinics.manage',
+        'specialties.view', 'specialties.manage',
         'patients.view', 'patients.create', 'patients.update', 'patients.delete',
         'appointments.view', 'appointments.create',
         'billing.view', 'billing.manage',
     },
     Roles.CLINIC_ADMIN: {
+        'clinics.view', 'clinics.manage',
+        'specialties.view', 'specialties.manage',
         'patients.view', 'patients.create', 'patients.update',
         'appointments.view', 'appointments.create',
         'billing.view',

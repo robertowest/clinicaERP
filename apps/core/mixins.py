@@ -6,8 +6,10 @@ from django.urls import reverse
 
 
 class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """restringe una vista a usuarios autenticados con `is_staff` (criterio provisional
-    hasta la fase 4 de roles, igual que `IsStaffOrReadOnly`/`IsAdminUser` en la api).
+    """restringe una vista a usuarios autenticados con `is_staff`.
+
+    para vistas con un permiso granular ya definido en `apps.usuarios.roles.PERMISOS_POR_ROL`
+    usar `apps.usuarios.mixins.PermisoRequeridoMixin` en su lugar (ver `apps/organizacion`).
 
     no hace falta `raise_exception`: `AccessMixin.handle_no_permission` ya distingue
     anónimo (redirige a login) de autenticado-sin-permiso (403), vía

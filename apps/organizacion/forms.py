@@ -35,6 +35,11 @@ class EspecialidadForm(forms.ModelForm):
 
 
 class ClinicaForm(forms.ModelForm):
+    """el queryset de `grupo` se acota al alcance del usuario en `__init__` (nunca a todos los
+    grupos de la plataforma): evita que, por ejemplo, un `GROUP_ADMIN` cree o reasigne una
+    clínica a un grupo ajeno eligiéndolo directamente en el formulario.
+    """
+
     grupo = forms.ModelChoiceField(label='grupo', queryset=services.listar_grupos())
     especialidades = forms.ModelMultipleChoiceField(
         label='especialidades',
@@ -57,7 +62,9 @@ class ClinicaForm(forms.ModelForm):
             'especialidades',
         ]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, usuario=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if usuario is not None:
+            self.fields['grupo'].queryset = services.listar_grupos_visibles_para(usuario)
         self.helper = FormHelper(self)
         self.helper.form_tag = False

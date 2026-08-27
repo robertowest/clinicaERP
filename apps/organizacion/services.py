@@ -12,14 +12,37 @@ from apps.organizacion.models import Clinica, Especialidad, Grupo
 # --- Grupo -------------------------------------------------------------
 
 
-def listar_grupos():
-    """devuelve el queryset de todos los grupos (activos e inactivos)."""
-    return Grupo.objects.all()
+def listar_grupos(*, ids=None):
+    """devuelve el queryset de todos los grupos (activos e inactivos); si se indica `ids`,
+    lo acota a esos ids (usado por el scoping de roles, ver `listar_grupos_visibles_para`).
+    """
+    qs = Grupo.objects.all()
+    return qs.filter(pk__in=ids) if ids is not None else qs
 
 
-def obtener_grupo(grupo_id):
-    """devuelve un grupo por id o lanza 404."""
-    return get_object_or_404(Grupo, pk=grupo_id)
+def obtener_grupo(grupo_id, *, ids=None):
+    """devuelve un grupo por id (opcionalmente acotado a `ids`) o lanza 404."""
+    return get_object_or_404(listar_grupos(ids=ids), pk=grupo_id)
+
+
+def listar_grupos_visibles_para(usuario):
+    """aplica el alcance por rol sobre `Grupo` (punto único de la regla, ver arquitectura.md
+    §6): superusuario ve todos los grupos; el resto (`GROUP_ADMIN`, único rol con permiso
+    sobre `Grupo`) solo ve el suyo propio.
+    """
+    if usuario.is_superuser:
+        return listar_grupos()
+    return listar_grupos(ids=[usuario.grupo_id] if usuario.grupo_id else [])
+
+
+def obtener_grupo_visible_para(grupo_id, usuario):
+    """devuelve un grupo por id, acotado al alcance de `usuario`, o lanza 404.
+
+    punto crítico de aislamiento por id directo: toda vista/viewset de detalle/edición de
+    `Grupo` debe resolver el objeto a través de esta función, nunca con `obtener_grupo(pk)`
+    a secas.
+    """
+    return get_object_or_404(listar_grupos_visibles_para(usuario), pk=grupo_id)
 
 
 def obtener_grupo_por_codigo(codigo):
@@ -62,16 +85,49 @@ def reactivar_grupo(grupo):
 # --- Clinica -------------------------------------------------------------
 
 
-def listar_clinicas(*, grupo=None):
-    """devuelve el queryset de clínicas; filtra por grupo solo si se indica explícitamente."""
+def listar_clinicas(*, grupo=None, ids=None):
+    """devuelve el queryset de clínicas; filtra por grupo y/o por `ids` solo si se indican
+    explícitamente (usado por el scoping de roles, ver `listar_clinicas_visibles_para`).
+    """
     qs = Clinica.objects.select_related('grupo').prefetch_related('especialidades')
+    if ids is not None:
+        qs = qs.filter(pk__in=ids)
     return qs.for_grupo(grupo) if grupo is not None else qs.all()
 
 
-def obtener_clinica(clinica_id, *, grupo=None):
-    """devuelve una clínica por id (opcionalmente acotada a un grupo) o lanza 404."""
-    qs = Clinica.objects.for_grupo(grupo) if grupo is not None else Clinica.objects.all()
-    return get_object_or_404(qs, pk=clinica_id)
+def obtener_clinica(clinica_id, *, grupo=None, ids=None):
+    """devuelve una clínica por id (opcionalmente acotada a un grupo y/o a `ids`) o lanza 404."""
+    return get_object_or_404(listar_clinicas(grupo=grupo, ids=ids), pk=clinica_id)
+
+
+def listar_clinicas_visibles_para(usuario):
+    """aplica el alcance por rol sobre `Clinica` (punto único de la regla, ver
+    arquitectura.md §6): superusuario ve todas; `GROUP_ADMIN` ve las de su grupo;
+    `CLINIC_ADMIN` solo las clínicas donde tiene esa asignación; el resto no ve ninguna (la
+    permission class/mixin ya se lo impide antes de llegar aquí).
+    """
+    # import perezoso: evita acoplar el módulo a `usuarios` salvo cuando hace falta resolver
+    # el alcance por rol (usuarios ya depende de organizacion, no al revés).
+    from apps.usuarios import services as usuarios_services
+    from apps.usuarios.roles import Roles
+
+    if usuario.is_superuser:
+        return listar_clinicas()
+    roles = usuarios_services.listar_roles_de_usuario(usuario)
+    if Roles.GROUP_ADMIN in roles:
+        return listar_clinicas(grupo=usuario.grupo)
+    ids = usuarios_services.listar_clinicas_de_usuario(usuario, rol=Roles.CLINIC_ADMIN)
+    return listar_clinicas(ids=list(ids.values_list('pk', flat=True)))
+
+
+def obtener_clinica_visible_para(clinica_id, usuario):
+    """devuelve una clínica por id, acotada al alcance de `usuario`, o lanza 404.
+
+    punto crítico de aislamiento por id directo: toda vista/viewset de detalle/edición de
+    `Clinica` debe resolver el objeto a través de esta función, nunca con
+    `obtener_clinica(pk)` a secas.
+    """
+    return get_object_or_404(listar_clinicas_visibles_para(usuario), pk=clinica_id)
 
 
 def obtener_clinica_por_codigo(grupo, codigo):

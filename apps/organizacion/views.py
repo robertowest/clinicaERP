@@ -4,7 +4,6 @@ complejidad de su formulario). todo el acceso a datos pasa por services.py.
 """
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, View
@@ -12,24 +11,21 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
-from apps.core.mixins import (
-    HtmxTriggerMixin,
-    ListaFiltradaMixin,
-    StaffRequiredMixin,
-    TituloContextMixin,
-)
+from apps.core.mixins import HtmxTriggerMixin, ListaFiltradaMixin, TituloContextMixin
 from apps.organizacion import services
 from apps.organizacion.exceptions import CodigoDuplicadoError
 from apps.organizacion.filters import ClinicaFilter, EspecialidadFilter, GrupoFilter
 from apps.organizacion.forms import ClinicaForm, EspecialidadForm, GrupoForm
 from apps.organizacion.tables import ClinicaTable, EspecialidadTable, GrupoTable
+from apps.usuarios.mixins import PermisoRequeridoMixin
 
 # --- Grupo -------------------------------------------------------------
-# dato de plataforma (cruza tenants): restringido a staff incluso en lectura,
-# igual que GrupoViewSet (permissions.IsAdminUser).
+# superusuario ve todos los grupos; GROUP_ADMIN (único rol con permiso "groups.*") solo el
+# suyo propio, igual que GrupoViewSet (ver services.listar_grupos_visibles_para).
 
 
-class GrupoListView(StaffRequiredMixin, ListaFiltradaMixin, SingleTableMixin, FilterView):
+class GrupoListView(PermisoRequeridoMixin, ListaFiltradaMixin, SingleTableMixin, FilterView):
+    permiso_requerido = 'groups.view'
     table_class = GrupoTable
     filterset_class = GrupoFilter
     template_name = 'crud/list.html'
@@ -38,16 +34,17 @@ class GrupoListView(StaffRequiredMixin, ListaFiltradaMixin, SingleTableMixin, Fi
     url_crear_name = 'organizacion:grupo-crear'
 
     def get_queryset(self):
-        return services.listar_grupos()
+        return services.listar_grupos_visibles_para(self.request.user)
 
 
-class GrupoDetalleView(StaffRequiredMixin, DetailView):
+class GrupoDetalleView(PermisoRequeridoMixin, DetailView):
+    permiso_requerido = 'groups.view'
     template_name = 'crud/detail_modal.html'
     context_object_name = 'objeto'
     titulo = 'Detalle del grupo'
 
     def get_object(self, queryset=None):
-        return services.obtener_grupo(self.kwargs['pk'])
+        return services.obtener_grupo_visible_para(self.kwargs['pk'], self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,11 +59,18 @@ class GrupoDetalleView(StaffRequiredMixin, DetailView):
         return context
 
 
-class GrupoCreateView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, CreateView):
+class GrupoCreateView(PermisoRequeridoMixin, HtmxTriggerMixin, TituloContextMixin, CreateView):
+    # crear un grupo da de alta un tenant nuevo: sigue siendo exclusivo de superadmin aunque
+    # groups.manage permita a GROUP_ADMIN editar su propio grupo (si no, cualquier
+    # group_admin podría generar tenants sin límite).
+    permiso_requerido = 'groups.manage'
     form_class = GrupoForm
     template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('organizacion:grupo-list')
     titulo = 'Nuevo grupo'
+
+    def test_func(self):
+        return self.request.user.is_superuser
 
     def form_valid(self, form):
         try:
@@ -77,14 +81,15 @@ class GrupoCreateView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, 
         return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class GrupoUpdateView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, UpdateView):
+class GrupoUpdateView(PermisoRequeridoMixin, HtmxTriggerMixin, TituloContextMixin, UpdateView):
+    permiso_requerido = 'groups.manage'
     form_class = GrupoForm
     template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('organizacion:grupo-list')
     titulo = 'Editar grupo'
 
     def get_object(self, queryset=None):
-        return services.obtener_grupo(self.kwargs['pk'])
+        return services.obtener_grupo_visible_para(self.kwargs['pk'], self.request.user)
 
     def form_valid(self, form):
         try:
@@ -95,22 +100,25 @@ class GrupoUpdateView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, 
         return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class GrupoBajaView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):
+class GrupoBajaView(PermisoRequeridoMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):
+    permiso_requerido = 'groups.manage'
     template_name = 'crud/confirm_delete_modal.html'
     success_url = reverse_lazy('organizacion:grupo-list')
     titulo = 'Desactivar grupo'
 
     def get_object(self, queryset=None):
-        return services.obtener_grupo(self.kwargs['pk'])
+        return services.obtener_grupo_visible_para(self.kwargs['pk'], self.request.user)
 
     def form_valid(self, form):
         services.desactivar_grupo(self.object)
         return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class GrupoReactivarView(StaffRequiredMixin, HtmxTriggerMixin, View):
+class GrupoReactivarView(PermisoRequeridoMixin, HtmxTriggerMixin, View):
+    permiso_requerido = 'groups.manage'
+
     def post(self, request, pk):
-        grupo = services.obtener_grupo(pk)
+        grupo = services.obtener_grupo_visible_para(pk, request.user)
         services.reactivar_grupo(grupo)
         messages.success(request, f'Grupo «{grupo.nombre}» reactivado.')
         return self._respuesta_htmx() or HttpResponseRedirect(
@@ -119,10 +127,11 @@ class GrupoReactivarView(StaffRequiredMixin, HtmxTriggerMixin, View):
 
 
 # --- Especialidad -------------------------------------------------------------
-# catálogo global: lectura para cualquier autenticado, escritura solo staff.
+# catálogo global: requiere "specialties.view"/"specialties.manage" (GROUP_ADMIN, CLINIC_ADMIN).
 
 
-class EspecialidadListView(LoginRequiredMixin, ListaFiltradaMixin, SingleTableMixin, FilterView):
+class EspecialidadListView(PermisoRequeridoMixin, ListaFiltradaMixin, SingleTableMixin, FilterView):
+    permiso_requerido = 'specialties.view'
     table_class = EspecialidadTable
     filterset_class = EspecialidadFilter
     template_name = 'crud/list.html'
@@ -134,7 +143,8 @@ class EspecialidadListView(LoginRequiredMixin, ListaFiltradaMixin, SingleTableMi
         return services.listar_especialidades()
 
 
-class EspecialidadDetalleView(LoginRequiredMixin, DetailView):
+class EspecialidadDetalleView(PermisoRequeridoMixin, DetailView):
+    permiso_requerido = 'specialties.view'
     template_name = 'crud/detail_modal.html'
     context_object_name = 'objeto'
     titulo = 'Detalle de la especialidad'
@@ -155,11 +165,12 @@ class EspecialidadDetalleView(LoginRequiredMixin, DetailView):
 
 
 class EspecialidadCreateView(
-    StaffRequiredMixin,
+    PermisoRequeridoMixin,
     HtmxTriggerMixin,
     TituloContextMixin,
     CreateView,
 ):
+    permiso_requerido = 'specialties.manage'
     form_class = EspecialidadForm
     template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('organizacion:especialidad-list')
@@ -175,11 +186,12 @@ class EspecialidadCreateView(
 
 
 class EspecialidadUpdateView(
-    StaffRequiredMixin,
+    PermisoRequeridoMixin,
     HtmxTriggerMixin,
     TituloContextMixin,
     UpdateView,
 ):
+    permiso_requerido = 'specialties.manage'
     form_class = EspecialidadForm
     template_name = 'crud/form_modal.html'
     success_url = reverse_lazy('organizacion:especialidad-list')
@@ -193,7 +205,8 @@ class EspecialidadUpdateView(
         return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class EspecialidadBajaView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):
+class EspecialidadBajaView(PermisoRequeridoMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):
+    permiso_requerido = 'specialties.manage'
     template_name = 'crud/confirm_delete_modal.html'
     success_url = reverse_lazy('organizacion:especialidad-list')
     titulo = 'Desactivar especialidad'
@@ -206,7 +219,9 @@ class EspecialidadBajaView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMi
         return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class EspecialidadReactivarView(StaffRequiredMixin, HtmxTriggerMixin, View):
+class EspecialidadReactivarView(PermisoRequeridoMixin, HtmxTriggerMixin, View):
+    permiso_requerido = 'specialties.manage'
+
     def post(self, request, pk):
         especialidad = services.obtener_especialidad(pk)
         services.reactivar_especialidad(especialidad)
@@ -217,12 +232,14 @@ class EspecialidadReactivarView(StaffRequiredMixin, HtmxTriggerMixin, View):
 
 
 # --- Clinica -------------------------------------------------------------
-# lectura para cualquier autenticado, escritura solo staff. create/update usan página
-# completa (crud/form_page.html): el formulario incluye 7 campos + m2m especialidades,
-# demasiado para un modal cómodo.
+# superusuario ve todas; GROUP_ADMIN las de su grupo; CLINIC_ADMIN solo las que tiene
+# asignadas (ver services.listar_clinicas_visibles_para). create/update usan página completa
+# (crud/form_page.html): el formulario incluye 7 campos + m2m especialidades, demasiado para
+# un modal cómodo.
 
 
-class ClinicaListView(LoginRequiredMixin, ListaFiltradaMixin, SingleTableMixin, FilterView):
+class ClinicaListView(PermisoRequeridoMixin, ListaFiltradaMixin, SingleTableMixin, FilterView):
+    permiso_requerido = 'clinics.view'
     table_class = ClinicaTable
     filterset_class = ClinicaFilter
     template_name = 'crud/list.html'
@@ -232,16 +249,17 @@ class ClinicaListView(LoginRequiredMixin, ListaFiltradaMixin, SingleTableMixin, 
     crear_en_pagina_completa = True
 
     def get_queryset(self):
-        return services.listar_clinicas()
+        return services.listar_clinicas_visibles_para(self.request.user)
 
 
-class ClinicaDetalleView(LoginRequiredMixin, DetailView):
+class ClinicaDetalleView(PermisoRequeridoMixin, DetailView):
+    permiso_requerido = 'clinics.view'
     template_name = 'crud/detail_modal.html'
     context_object_name = 'objeto'
     titulo = 'Detalle de la clínica'
 
     def get_object(self, queryset=None):
-        return services.obtener_clinica(self.kwargs['pk'])
+        return services.obtener_clinica_visible_para(self.kwargs['pk'], self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -265,12 +283,18 @@ class ClinicaDetalleView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ClinicaCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
+class ClinicaCreateView(PermisoRequeridoMixin, TituloContextMixin, CreateView):
+    permiso_requerido = 'clinics.manage'
     form_class = ClinicaForm
     template_name = 'crud/form_page.html'
     success_url = reverse_lazy('organizacion:clinica-list')
     titulo = 'Nueva clínica'
     url_cancelar_name = 'organizacion:clinica-list'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['usuario'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         try:
@@ -282,7 +306,8 @@ class ClinicaCreateView(StaffRequiredMixin, TituloContextMixin, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class ClinicaUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
+class ClinicaUpdateView(PermisoRequeridoMixin, TituloContextMixin, UpdateView):
+    permiso_requerido = 'clinics.manage'
     form_class = ClinicaForm
     template_name = 'crud/form_page.html'
     success_url = reverse_lazy('organizacion:clinica-list')
@@ -290,7 +315,12 @@ class ClinicaUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
     url_cancelar_name = 'organizacion:clinica-list'
 
     def get_object(self, queryset=None):
-        return services.obtener_clinica(self.kwargs['pk'])
+        return services.obtener_clinica_visible_para(self.kwargs['pk'], self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['usuario'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         try:
@@ -302,22 +332,25 @@ class ClinicaUpdateView(StaffRequiredMixin, TituloContextMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class ClinicaBajaView(StaffRequiredMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):
+class ClinicaBajaView(PermisoRequeridoMixin, HtmxTriggerMixin, TituloContextMixin, DeleteView):
+    permiso_requerido = 'clinics.manage'
     template_name = 'crud/confirm_delete_modal.html'
     success_url = reverse_lazy('organizacion:clinica-list')
     titulo = 'Desactivar clínica'
 
     def get_object(self, queryset=None):
-        return services.obtener_clinica(self.kwargs['pk'])
+        return services.obtener_clinica_visible_para(self.kwargs['pk'], self.request.user)
 
     def form_valid(self, form):
         services.desactivar_clinica(self.object)
         return self._respuesta_htmx() or HttpResponseRedirect(self.get_success_url())
 
 
-class ClinicaReactivarView(StaffRequiredMixin, HtmxTriggerMixin, View):
+class ClinicaReactivarView(PermisoRequeridoMixin, HtmxTriggerMixin, View):
+    permiso_requerido = 'clinics.manage'
+
     def post(self, request, pk):
-        clinica = services.obtener_clinica(pk)
+        clinica = services.obtener_clinica_visible_para(pk, request.user)
         services.reactivar_clinica(clinica)
         messages.success(request, f'Clínica «{clinica.nombre}» reactivada.')
         return self._respuesta_htmx() or HttpResponseRedirect(

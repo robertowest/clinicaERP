@@ -130,9 +130,17 @@ def quitar_asignacion(asignacion):
     asignacion.delete()
 
 
-def listar_clinicas_de_usuario(usuario):
-    """devuelve el queryset de clínicas en las que el usuario tiene un rol asignado."""
-    return Clinica.objects.filter(usuarios_asignados__usuario=usuario).distinct()
+def listar_clinicas_de_usuario(usuario, *, rol=None):
+    """devuelve el queryset de clínicas en las que el usuario tiene un rol asignado.
+
+    si se indica `rol`, acota a las asignaciones con ese rol concreto (por ejemplo, para
+    resolver el alcance de un `CLINIC_ADMIN`: solo las clínicas donde tiene ese rol, no
+    todas las que pudiera tener asignadas con otro rol).
+    """
+    qs = Clinica.objects.filter(usuarios_asignados__usuario=usuario)
+    if rol is not None:
+        qs = qs.filter(usuarios_asignados__rol=rol)
+    return qs.distinct()
 
 
 def listar_roles_de_usuario(usuario):
@@ -195,4 +203,18 @@ def usuario_tiene_permiso(usuario, clinica, permiso):
     roles = UsuarioClinica.objects.filter(usuario=usuario).filter(
         Q(clinica=clinica) | Q(clinica__isnull=True),
     ).values_list('rol', flat=True)
+    return any(rol_tiene_permiso(rol, permiso) for rol in roles)
+
+
+def usuario_tiene_permiso_generico(usuario, permiso):
+    """comprueba si `usuario` tiene, en cualquiera de sus asignaciones (cualquier clínica o
+    de alcance grupal), un rol que conceda `permiso`.
+
+    usar cuando no hay una clínica concreta sobre la que resolver (listados/altas de recursos
+    de alcance grupo, como grupo/clínica/especialidad); para permisos ligados a una clínica en
+    concreto seguir usando `usuario_tiene_permiso()`.
+    """
+    if usuario.is_superuser:
+        return True
+    roles = UsuarioClinica.objects.filter(usuario=usuario).values_list('rol', flat=True)
     return any(rol_tiene_permiso(rol, permiso) for rol in roles)

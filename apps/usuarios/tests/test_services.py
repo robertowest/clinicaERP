@@ -89,6 +89,54 @@ class UsuarioTienePermisoTests(TestCase):
         self.assertTrue(services.usuario_tiene_permiso(self.usuario, self.clinica, 'lo.que.sea'))
 
 
+class UsuarioTienePermisoGenericoTests(TestCase):
+    def setUp(self):
+        self.grupo = Grupo.objects.create(nombre='Grupo Atenea', codigo='ATN')
+        self.clinica = Clinica.objects.create(grupo=self.grupo, nombre='Aldaia', codigo='ALD')
+        self.usuario = CustomUser.objects.create_user(
+            username='ana', password='clave123', grupo=self.grupo,
+        )
+
+    def test_sin_asignaciones_no_tiene_ningun_permiso(self):
+        self.assertFalse(services.usuario_tiene_permiso_generico(self.usuario, 'clinics.view'))
+
+    def test_rol_ligado_a_clinica_concede_el_permiso_sin_indicar_clinica(self):
+        services.asignar_rol(usuario=self.usuario, rol=Roles.CLINIC_ADMIN, clinica=self.clinica)
+        self.assertTrue(services.usuario_tiene_permiso_generico(self.usuario, 'clinics.manage'))
+        self.assertFalse(services.usuario_tiene_permiso_generico(self.usuario, 'groups.manage'))
+
+    def test_rol_de_alcance_grupal_concede_el_permiso(self):
+        services.asignar_rol(usuario=self.usuario, rol=Roles.GROUP_ADMIN)
+        self.assertTrue(services.usuario_tiene_permiso_generico(self.usuario, 'groups.manage'))
+
+    def test_superusuario_tiene_cualquier_permiso_sin_asignaciones(self):
+        self.usuario.is_superuser = True
+        self.usuario.save(update_fields=['is_superuser'])
+        self.assertTrue(services.usuario_tiene_permiso_generico(self.usuario, 'lo.que.sea'))
+
+
+class ListarClinicasDeUsuarioTests(TestCase):
+    def setUp(self):
+        self.grupo = Grupo.objects.create(nombre='Grupo Atenea', codigo='ATN')
+        self.clinica_a = Clinica.objects.create(grupo=self.grupo, nombre='Aldaia', codigo='ALD')
+        self.clinica_b = Clinica.objects.create(grupo=self.grupo, nombre='Torrent', codigo='TOR')
+        self.usuario = CustomUser.objects.create_user(
+            username='ana', password='clave123', grupo=self.grupo,
+        )
+
+    def test_filtra_por_rol_cuando_se_indica(self):
+        services.asignar_rol(usuario=self.usuario, rol=Roles.CLINIC_ADMIN, clinica=self.clinica_a)
+        services.asignar_rol(usuario=self.usuario, rol=Roles.DOCTOR, clinica=self.clinica_b)
+
+        solo_clinic_admin = services.listar_clinicas_de_usuario(
+            self.usuario, rol=Roles.CLINIC_ADMIN,
+        )
+        self.assertEqual(list(solo_clinic_admin), [self.clinica_a])
+
+        todas = services.listar_clinicas_de_usuario(self.usuario)
+        self.assertCountEqual(list(todas), [self.clinica_a, self.clinica_b])
+
+
 class ObtenerDatosMeTests(TestCase):
     def test_rol_de_grupo_expande_a_todas_las_clinicas_activas(self):
         grupo = Grupo.objects.create(nombre='Grupo Atenea', codigo='ATN')
