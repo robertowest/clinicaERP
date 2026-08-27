@@ -19,6 +19,14 @@
         </a>
     </div>
 
+    <div class="nav-section-title">Pacientes</div>
+    <div class="nav flex-column">
+        <a class="nav-link {% if request.resolver_match.url_name == 'paciente-list' %}active{% endif %}"
+        href="{% url 'pacientes:paciente-list' %}">
+            <i class="bi bi-person-vcard"></i> Pacientes
+        </a>
+    </div>
+
     {% if request.user.is_staff %}
         <div class="nav-section-title">Accesos</div>
         <div class="nav flex-column">

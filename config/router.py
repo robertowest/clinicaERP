@@ -2,9 +2,11 @@
 from rest_framework.routers import DefaultRouter
 
 from apps.organizacion.api.routes import register as register_organizacion
+from apps.pacientes.api.routes import register as register_pacientes
 from apps.usuarios.api.routes import register as register_usuarios
 
 router = DefaultRouter()
 
 register_organizacion(router)
 register_usuarios(router)
+register_pacientes(router)

@@ -20,6 +20,7 @@ urlpatterns = [
     path('', login_required(TemplateView.as_view(template_name='home.html')), name='home'),
     path('organizacion/', include('apps.organizacion.urls')),
     path('usuarios/', include('apps.usuarios.urls')),
+    path('pacientes/', include('apps.pacientes.urls')),
 ]
 
 if settings.DEBUG:
