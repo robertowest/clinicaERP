@@ -23,6 +23,7 @@ class UsuarioTable(tables.Table):
             'url_prefix': 'usuarios:usuario',
             'edicion_pagina_completa': False,
             'mostrar_gestion_accesos': True,
+            'url_gestion_accesos_name': 'usuarios:usuario-accesos',
             'permiso_editar': 'users.manage',
             'permiso_eliminar': 'users.manage',
         },

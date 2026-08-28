@@ -51,6 +51,7 @@ PERMISOS_POR_ROL = {
         'clinics.view', 'clinics.manage',
         'specialties.view', 'specialties.manage',
         'patients.view', 'patients.create', 'patients.update', 'patients.delete',
+        'doctors.view', 'doctors.create', 'doctors.update', 'doctors.delete',
         'appointments.view', 'appointments.create',
         'billing.view', 'billing.manage',
     },
@@ -58,15 +59,18 @@ PERMISOS_POR_ROL = {
         'clinics.view', 'clinics.manage',
         'specialties.view', 'specialties.manage',
         'patients.view', 'patients.create', 'patients.update',
+        'doctors.view', 'doctors.create', 'doctors.update',
         'appointments.view', 'appointments.create',
         'billing.view',
     },
     Roles.DOCTOR: {
         'patients.view', 'patients.update',
+        'doctors.view',
         'appointments.view', 'appointments.create',
     },
     Roles.RECEPTIONIST: {
         'patients.view', 'patients.create',
+        'doctors.view',
         'appointments.view', 'appointments.create',
     },
 }

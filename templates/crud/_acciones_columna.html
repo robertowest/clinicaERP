@@ -31,11 +31,11 @@
         {% endif %}
     {% endif %}
 
-    {% if mostrar_gestion_accesos and request.user.is_staff %}
+    {% if mostrar_gestion_accesos and request.user|tiene_permiso_o_staff:permiso_gestion_accesos %}
         <a title="Accesos por clínica"
            class="btn btn-sm btn-outline-primary"
            hx-boost="false"
-           href="{% url url_prefix|add:'-accesos' record.pk %}">
+           href="{% url url_gestion_accesos_name record.pk %}">
             <i class="bi bi-key"></i>
         </a>
     {% endif %}
