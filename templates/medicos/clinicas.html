@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Especialidades de {{ medico }} · ERP Clínica{% endblock %}
+{% block titulo_pagina %}Especialidades de {{ medico }}{% endblock %}
+
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-secondary mb-0">
+            Clínicas en las que <strong>{{ medico }}</strong> ejerce y la especialidad que tiene en cada una.
+        </p>
+        <a href="{% url 'medicos:medico-list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a médicos
+        </a>
+    </div>
+
+    {% include 'medicos/_clinicas_tabla.html' %}
+{% endblock %}
