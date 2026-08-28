@@ -7,8 +7,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # sin publicar el puerto al host: el contenedor django lo alcanza por la red interna de
+    # compose (db:5432) y así no choca con un postgres que ya pudiera estar corriendo en el
+    # host en el 5432. para inspeccionarlo desde fuera: `docker compose exec db psql -U ...`.
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
@@ -18,6 +19,12 @@ services:
   django:
     build: .
     env_file: .env
+    environment:
+      # el contenedor siempre corre en producción contra el postgres de arriba, sin
+      # depender de lo que tenga el .env local de cada desarrollador (que sigue sirviendo
+      # para SECRET_KEY/credenciales) — POSTGRES_HOST coincide con el nombre del servicio.
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      POSTGRES_HOST: db
     volumes:
       - .:/app
     ports:

@@ -27,6 +27,11 @@ def obtener_paciente(paciente_id, *, grupo=None, ids=None):
     return get_object_or_404(listar_pacientes(grupo=grupo, ids=ids), pk=paciente_id)
 
 
+def obtener_paciente_por_nhc(grupo, nhc):
+    """devuelve el paciente de un grupo por nhc o None si no existe (útil para seeds/comandos)."""
+    return Paciente.objects.filter(grupo=grupo, nhc=nhc).first()
+
+
 def crear_paciente(*, grupo, nhc, documento_tipo, documento_numero, **datos):
     """crea un paciente validando que `nhc` y `documento_tipo`+`documento_numero` no existan
     ya en ese grupo (evita duplicar la ficha del mismo paciente)."""

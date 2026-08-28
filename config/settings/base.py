@@ -73,21 +73,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-# utilizaremos sqlite3 para realizar pruebas
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
-    'produccion': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST', default='localhost'),
-        'PORT': env('POSTGRES_PORT', default='5432'),
-    },
-}
+# DATABASES se define por entorno (development.py: sqlite, production.py: postgresql vía
+# variables de entorno) — django solo conecta por el alias 'default', así que no tiene
+# sentido definirlo aquí con un alias alternativo que nadie usaría.
 
 AUTH_USER_MODEL = 'usuarios.CustomUser'
 

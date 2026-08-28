@@ -21,4 +21,6 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# se invoca con "sh" (no "./docker-entrypoint.sh") porque docker-compose monta el proyecto
+# como bind volume en desarrollo: el bit +x del build no sobrevive al montaje del host.
+ENTRYPOINT ["sh", "docker-entrypoint.sh"]

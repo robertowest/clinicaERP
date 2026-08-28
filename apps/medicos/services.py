@@ -34,6 +34,11 @@ def obtener_medico(medico_id, *, grupo=None, ids=None):
     return get_object_or_404(listar_medicos(grupo=grupo, ids=ids), pk=medico_id)
 
 
+def obtener_medico_de_usuario(usuario):
+    """devuelve el `Medico` asociado a un usuario o None si no tiene (útil para seeds/comandos)."""
+    return Medico.objects.filter(usuario=usuario).first()
+
+
 def listar_usuarios_disponibles(*, grupo=None, medico=None):
     """usuarios sin médico asociado aún, opcionalmente acotados a un grupo (para el select
     del formulario de alta: no ofrecer usuarios que ya son médicos).
