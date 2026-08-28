@@ -9,13 +9,13 @@ ATRIBUTOS_TABLA = {'class': 'table table-hover align-middle mb-0'}
 
 
 class UsuarioTable(tables.Table):
-    username = tables.Column(verbose_name='Usuario')
+    username        = tables.Column(verbose_name='Usuario')
     nombre_completo = tables.Column(empty_values=(), verbose_name='nombre', orderable=False)
-    email = tables.Column(verbose_name='eMail', orderable=False)
-    grupo = tables.Column(accessor='grupo__nombre', verbose_name='grupo', default='—')
-    is_staff = BooleandColumn(verbose_name='Empleado', orderable=False)
-    is_active = ActiveColumn(verbose_name='estado', orderable=False)
-    acciones = tables.TemplateColumn(
+    email           = tables.Column(verbose_name='eMail', orderable=False)
+    grupo           = tables.Column(accessor='grupo__nombre', verbose_name='grupo', default='—')
+    is_staff        = BooleandColumn(verbose_name='Empleado', orderable=False)
+    is_active       = ActiveColumn(verbose_name='estado', orderable=False)
+    acciones        = tables.TemplateColumn(
         template_name='crud/_acciones_columna.html',
         orderable=False,
         verbose_name='',
@@ -23,6 +23,8 @@ class UsuarioTable(tables.Table):
             'url_prefix': 'usuarios:usuario',
             'edicion_pagina_completa': False,
             'mostrar_gestion_accesos': True,
+            'permiso_editar': 'users.manage',
+            'permiso_eliminar': 'users.manage',
         },
     )
 

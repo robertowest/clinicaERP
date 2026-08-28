@@ -29,7 +29,7 @@
                 <div class="card-body">
                     <div class="d-flex flex-wrap align-items-center gap-2">
                         {% for field in filter.form %}
-                            {% comment " quitamos el div para poder determinar el tamaño desde filters.py" %}
+                            {% comment "quitamos el div para poder determinar el tamaño desde filters" %}
                             <div style="flex: 0 0 200px;">
                             </div>
                             {% endcomment %}
@@ -45,8 +45,11 @@
 
         <div class="card">
             <div class="card-body p-0" id="tabla-container"
-                 hx-get="{{ request.path }}" hx-select="#tabla-container" hx-swap="outerHTML"
-                 hx-trigger="refrescar-lista from:body" hx-include="#filtro-form">
+                 hx-get="{{ request.path }}"
+                 hx-select="#tabla-container"
+                 hx-swap="outerHTML"
+                 hx-trigger="refrescar-lista from:body"
+                 hx-include="#filtro-form">
                 {% render_table table %}
             </div>
         </div>

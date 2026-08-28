@@ -14,7 +14,11 @@ class GrupoTable(tables.Table):
         template_name='crud/_acciones_columna.html',
         orderable=False,
         verbose_name='',
-        extra_context={'url_prefix': 'organizacion:grupo'},
+        extra_context={
+            'url_prefix': 'organizacion:grupo',
+            'permiso_editar': 'groups.manage',
+            'permiso_eliminar': 'groups.manage',
+        },
     )
 
     class Meta:
@@ -31,7 +35,11 @@ class EspecialidadTable(tables.Table):
         template_name='crud/_acciones_columna.html',
         orderable=False,
         verbose_name='',
-        extra_context={'url_prefix': 'organizacion:especialidad'},
+        extra_context={
+            'url_prefix': 'organizacion:especialidad',
+            'permiso_editar': 'specialties.manage',
+            'permiso_eliminar': 'specialties.manage',
+        },
     )
 
     class Meta:
@@ -49,7 +57,12 @@ class ClinicaTable(tables.Table):
         template_name='crud/_acciones_columna.html',
         orderable=False,
         verbose_name='',
-        extra_context={'url_prefix': 'organizacion:clinica', 'edicion_pagina_completa': True},
+        extra_context={
+            'url_prefix': 'organizacion:clinica',
+            'edicion_pagina_completa': True,
+            'permiso_editar': 'clinics.manage',
+            'permiso_eliminar': 'clinics.manage',
+        },
     )
 
     class Meta:

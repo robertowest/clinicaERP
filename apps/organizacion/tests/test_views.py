@@ -174,6 +174,17 @@ class ClinicaVistasTests(TestCase):
         self.assertTrue(respuesta.context['form'].errors.get('grupo'))
         self.assertFalse(Clinica.objects.filter(codigo='INT').exists())
 
+    def test_group_admin_ve_editar_y_desactivar_en_la_tabla(self):
+        # GROUP_ADMIN tiene clinics.manage: los botones de editar/desactivar de
+        # _acciones_columna.html deben seguir apareciendo (no debe romperse por el cambio
+        # de gating de is_staff a permiso granular).
+        self.client.force_login(self.group_admin_a)
+        respuesta = self.client.get(reverse('organizacion:clinica-list'))
+        url_editar = reverse('organizacion:clinica-editar', args=[self.clinica_a1.pk])
+        url_eliminar = reverse('organizacion:clinica-eliminar', args=[self.clinica_a1.pk])
+        self.assertContains(respuesta, f'href="{url_editar}"')
+        self.assertContains(respuesta, f'hx-get="{url_eliminar}"')
+
     def test_formularios_y_modales_renderizan(self):
         self.client.force_login(self.group_admin_a)
         respuesta = self.client.get(reverse('organizacion:clinica-list'))
