@@ -4,7 +4,9 @@ views.py, api/endpoints.py, serializers.py, filters.py y tables.py llaman
 exclusivamente a estas funciones (excepción: admin.py, ver arquitectura.md §5).
 """
 
+from django.contrib.auth.models import Permission
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -15,8 +17,8 @@ from apps.usuarios.exceptions import (
     RolRequiereClinicaError,
     UsuarioDuplicadoError,
 )
-from apps.usuarios.models import CustomUser, UsuarioClinica
-from apps.usuarios.roles import ROLES_SIN_CLINICA, rol_tiene_permiso
+from apps.usuarios.models import CustomUser, PermisoPersonalizado, Rol, RolPerfil, UsuarioClinica
+from apps.usuarios.roles import CATALOGO_PERMISOS, PERMISOS_POR_ROL, ROLES_INICIALES
 
 # --- CustomUser -------------------------------------------------------------
 
@@ -92,7 +94,7 @@ def reactivar_usuario(usuario):
 
 def listar_asignaciones(*, usuario=None):
     """devuelve el queryset de asignaciones usuario-clínica; filtra por usuario si se indica."""
-    qs = UsuarioClinica.objects.select_related('usuario', 'clinica')
+    qs = UsuarioClinica.objects.select_related('usuario', 'clinica', 'rol', 'rol__perfil')
     return qs.filter(usuario=usuario) if usuario is not None else qs.all()
 
 
@@ -102,27 +104,46 @@ def obtener_asignacion(asignacion_id, *, usuario=None):
     return get_object_or_404(qs, pk=asignacion_id)
 
 
+def listar_roles():
+    """devuelve el queryset de roles disponibles para asignar (selects de formularios/api)."""
+    return Rol.objects.select_related('perfil').order_by('name')
+
+
+def obtener_rol_por_codigo(codigo):
+    """devuelve un `Rol` por su código estable (`RolPerfil.codigo`, ver `roles.Roles`)."""
+    return Rol.objects.select_related('perfil').get(perfil__codigo=codigo)
+
+
+def _resolver_rol(rol):
+    """acepta un `Rol` ya resuelto o su código estable y siempre devuelve la instancia."""
+    return rol if isinstance(rol, Rol) else obtener_rol_por_codigo(rol)
+
+
 def asignar_rol(*, usuario, rol, clinica=None):
     """asigna un rol a un usuario, opcionalmente ligado a una clínica.
 
+    `rol` acepta tanto una instancia de `Rol` como su código estable (`RolPerfil.codigo`).
+
     valida (ver arquitectura.md §4):
-    - roles de alcance grupo/plataforma (`SUPERADMIN`, `GROUP_ADMIN`) no aceptan clínica.
+    - los roles de alcance grupo/plataforma (`RolPerfil.requiere_clinica=False`) no
+      aceptan clínica.
     - el resto de roles requieren una clínica.
     - la clínica debe pertenecer al mismo grupo que el usuario.
     """
-    if rol in ROLES_SIN_CLINICA:
+    rol_obj = _resolver_rol(rol)
+    if not rol_obj.perfil.requiere_clinica:
         if clinica is not None:
             raise RolNoAceptaClinicaError(
-                f'el rol "{rol}" es de alcance grupo/plataforma y no admite clínica.',
+                f'el rol "{rol_obj}" es de alcance grupo/plataforma y no admite clínica.',
             )
     else:
         if clinica is None:
-            raise RolRequiereClinicaError(f'el rol "{rol}" requiere indicar una clínica.')
+            raise RolRequiereClinicaError(f'el rol "{rol_obj}" requiere indicar una clínica.')
         if clinica.grupo_id != usuario.grupo_id:
             raise ClinicaFueraDeGrupoError(
                 f'la clínica "{clinica}" no pertenece al grupo del usuario "{usuario}".',
             )
-    return UsuarioClinica.objects.create(usuario=usuario, clinica=clinica, rol=rol)
+    return UsuarioClinica.objects.create(usuario=usuario, clinica=clinica, rol=rol_obj)
 
 
 def quitar_asignacion(asignacion):
@@ -133,21 +154,61 @@ def quitar_asignacion(asignacion):
 def listar_clinicas_de_usuario(usuario, *, rol=None):
     """devuelve el queryset de clínicas en las que el usuario tiene un rol asignado.
 
-    si se indica `rol`, acota a las asignaciones con ese rol concreto (por ejemplo, para
-    resolver el alcance de un `CLINIC_ADMIN`: solo las clínicas donde tiene ese rol, no
-    todas las que pudiera tener asignadas con otro rol).
+    si se indica `rol` (instancia o código), acota a las asignaciones con ese rol
+    concreto (por ejemplo, para resolver el alcance de un `CLINIC_ADMIN`: solo las
+    clínicas donde tiene ese rol, no todas las que pudiera tener asignadas con otro rol).
     """
     qs = Clinica.objects.filter(usuarios_asignados__usuario=usuario)
     if rol is not None:
-        qs = qs.filter(usuarios_asignados__rol=rol)
+        qs = qs.filter(usuarios_asignados__rol=_resolver_rol(rol))
     return qs.distinct()
 
 
 def listar_roles_de_usuario(usuario):
-    """devuelve los roles (strings) que tiene asignados un usuario, sin duplicados."""
+    """devuelve los códigos de rol (`RolPerfil.codigo`) que tiene asignados un usuario,
+    sin duplicados."""
     return list(
-        UsuarioClinica.objects.filter(usuario=usuario).values_list('rol', flat=True).distinct(),
+        UsuarioClinica.objects.filter(usuario=usuario)
+        .values_list('rol__perfil__codigo', flat=True).distinct(),
     )
+
+
+def crear_catalogo_roles():
+    """crea o actualiza en bd los roles iniciales del sistema (`roles.ROLES_INICIALES`) y
+    sus permisos granulares (`roles.PERMISOS_POR_ROL`). idempotente: se llama tanto desde
+    la migración de datos que introdujo este esquema como desde la señal `post_migrate`
+    (`apps.py`) y desde `seed.py`, así que ampliar el catálogo en `roles.py` más adelante
+    no requiere una migración nueva. no toca `Rol.name` de un rol ya existente (podría
+    haberlo renombrado un administrador desde el admin).
+
+    devuelve `{codigo: Rol}` para quien necesite resolver el rol recién creado/actualizado.
+    """
+    content_type = ContentType.objects.get_for_model(PermisoPersonalizado)
+    permisos_por_codename = {
+        codename: Permission.objects.get_or_create(
+            content_type=content_type, codename=codename,
+            defaults={'name': f'Puede: {codename}'},
+        )[0]
+        for codename in CATALOGO_PERMISOS
+    }
+
+    roles_por_codigo = {}
+    for codigo, datos in ROLES_INICIALES.items():
+        perfil = RolPerfil.objects.select_related('rol').filter(codigo=codigo).first()
+        if perfil is None:
+            rol = Rol.objects.create(name=datos['nombre'])
+            perfil = RolPerfil.objects.create(
+                rol=rol, codigo=codigo, requiere_clinica=datos['requiere_clinica'],
+            )
+        else:
+            rol = perfil.rol
+            perfil.requiere_clinica = datos['requiere_clinica']
+            perfil.save(update_fields=['requiere_clinica'])
+        rol.permissions.set(
+            permisos_por_codename[codename] for codename in PERMISOS_POR_ROL.get(codigo, set())
+        )
+        roles_por_codigo[codigo] = rol
+    return roles_por_codigo
 
 
 def obtener_datos_me(usuario):
@@ -167,8 +228,9 @@ def obtener_datos_me(usuario):
             clinicas = list(Clinica.objects.filter(grupo=usuario.grupo, is_active=True))
         else:
             clinicas = []
+        rol_codigo = asignacion.rol.perfil.codigo
         clinics.extend(
-            {'id': c.id, 'nombre': c.nombre, 'codigo': c.codigo, 'rol': asignacion.rol}
+            {'id': c.id, 'nombre': c.nombre, 'codigo': c.codigo, 'rol': rol_codigo}
             for c in clinicas
         )
 
@@ -184,7 +246,7 @@ def obtener_datos_me(usuario):
             if usuario.grupo_id else None
         ),
         'clinics': clinics,
-        'roles': [a.rol for a in asignaciones],
+        'roles': [a.rol.perfil.codigo for a in asignaciones],
     }
 
 
@@ -194,16 +256,17 @@ def usuario_tiene_permiso(usuario, clinica, permiso):
     la regla por su cuenta.
 
     comprueba los roles del usuario en `clinica` (o de alcance grupo/plataforma, que
-    aplican a cualquier clínica del mismo grupo) y si alguno concede `permiso`.
+    aplican a cualquier clínica del mismo grupo) y si alguno concede `permiso`, resolviendo
+    directamente contra `auth_group_permissions`/`auth_permission` (ya no hay un catálogo
+    en memoria: los permisos de cada rol se gestionan en bd, ver `crear_catalogo_roles()`).
     """
     if usuario.is_superuser:
         return True
     # la asignación aplica si es para esa clínica exacta o si es un rol de alcance
     # grupo/plataforma (`clinica=None`), que cubre cualquier clínica del grupo.
-    roles = UsuarioClinica.objects.filter(usuario=usuario).filter(
+    return UsuarioClinica.objects.filter(usuario=usuario).filter(
         Q(clinica=clinica) | Q(clinica__isnull=True),
-    ).values_list('rol', flat=True)
-    return any(rol_tiene_permiso(rol, permiso) for rol in roles)
+    ).filter(rol__permissions__codename=permiso).exists()
 
 
 def usuario_tiene_permiso_generico(usuario, permiso):
@@ -216,5 +279,6 @@ def usuario_tiene_permiso_generico(usuario, permiso):
     """
     if usuario.is_superuser:
         return True
-    roles = UsuarioClinica.objects.filter(usuario=usuario).values_list('rol', flat=True)
-    return any(rol_tiene_permiso(rol, permiso) for rol in roles)
+    return UsuarioClinica.objects.filter(
+        usuario=usuario, rol__permissions__codename=permiso,
+    ).exists()

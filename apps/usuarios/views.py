@@ -54,7 +54,7 @@ class UsuarioDetalleView(StaffRequiredMixin, DetailView):
         usuario = context['objeto']
         asignaciones = services.listar_asignaciones(usuario=usuario)
         texto_accesos = ', '.join(
-            f'{a.get_rol_display()} ({a.clinica or "grupo"})' for a in asignaciones
+            f'{a.rol.name} ({a.clinica or "grupo"})' for a in asignaciones
         )
         context['titulo'] = self.titulo
         context['campos'] = [

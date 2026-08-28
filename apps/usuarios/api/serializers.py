@@ -8,6 +8,9 @@ from apps.usuarios.models import CustomUser, UsuarioClinica
 
 class UsuarioClinicaSerializer(serializers.ModelSerializer):
     clinica_nombre = serializers.CharField(source='clinica.nombre', read_only=True, default=None)
+    # se expone el código estable del rol (`RolPerfil.codigo`), no el pk de `Rol` ni su
+    # nombre libre (editable desde el admin), para no romper el contrato de la api.
+    rol = serializers.CharField(source='rol.perfil.codigo', read_only=True)
 
     class Meta:
         model = UsuarioClinica

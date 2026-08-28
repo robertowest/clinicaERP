@@ -1,31 +1,50 @@
-"""roles y permisos centralizados de la plataforma.
+"""catálogo semilla de roles y permisos granulares de la plataforma.
 
-toda comprobación de autorización (vistas html, api, futuras apps) importa `Roles`
-y llama a `rol_tiene_permiso()` / `services.usuario_tiene_permiso()` desde aquí, nunca
-compara strings de rol sueltos por el código.
+los roles ya no son un `TextChoices` hardcodeado en un `CharField`: `UsuarioClinica.rol`
+es un fk a `Rol` (proxy de `django.contrib.auth.models.Group`, ver `models.py`), y sus
+permisos viven en `auth_group_permissions`/`auth_permission` — gestionables desde el
+django admin sin tocar código ni redesplegar.
+
+lo que queda aquí es solo la semilla inicial: `services.crear_catalogo_roles()` (llamada
+desde la migración de datos que introdujo este esquema, desde la señal `post_migrate` de
+`apps.py` y desde `seed.py`) la usa para crear/actualizar en bd los roles iniciales y sus
+permisos — es idempotente, así que ampliar este catálogo más adelante no requiere una
+migración nueva, solo volver a migrar/arrancar la app.
+
+toda comprobación de autorización (vistas html, api, futuras apps) sigue pasando por
+`services.usuario_tiene_permiso()`/`usuario_tiene_permiso_generico()`, nunca comparando
+rol/string sueltos por su cuenta (punto único de autorización, arquitectura.md §6).
 """
-from django.db import models
 
 
-class Roles(models.TextChoices):
-    """roles iniciales del sistema (ver arquitectura.md §4 y prompt.md §7)."""
+class Roles:
+    """códigos estables de los roles iniciales del sistema (`RolPerfil.codigo`).
 
-    SUPERADMIN = 'SUPERADMIN', 'Superadministrador'
-    GROUP_ADMIN = 'GROUP_ADMIN', 'Administrador de grupo'
-    CLINIC_ADMIN = 'CLINIC_ADMIN', 'Administrador de clínica'
-    DOCTOR = 'DOCTOR', 'Médico'
-    RECEPTIONIST = 'RECEPTIONIST', 'Recepción'
+    el antiguo `SUPERADMIN` se retira como rol asignable: ya lo cubre `CustomUser.is_superuser`,
+    que `usuario_tiene_permiso()`/`usuario_tiene_permiso_generico()` comprueban antes que
+    cualquier rol (y que django ya trata de forma nativa como acceso a todo permiso).
+    """
+
+    GROUP_ADMIN = 'GROUP_ADMIN'
+    CLINIC_ADMIN = 'CLINIC_ADMIN'
+    DOCTOR = 'DOCTOR'
+    RECEPTIONIST = 'RECEPTIONIST'
 
 
-# roles de alcance grupo/plataforma: no están ligados a una clínica concreta, por eso
-# `UsuarioClinica.clinica` es nullable solo para estos dos roles (ver arquitectura.md §4).
-ROLES_SIN_CLINICA = {Roles.SUPERADMIN, Roles.GROUP_ADMIN}
+# nombre visible (Group.name) y si el rol requiere clínica (RolPerfil.requiere_clinica),
+# por código. las claves son las mismas que apps.usuarios.roles.Roles.
+ROLES_INICIALES = {
+    Roles.GROUP_ADMIN: {'nombre': 'Administrador de grupo', 'requiere_clinica': False},
+    Roles.CLINIC_ADMIN: {'nombre': 'Administrador de clínica', 'requiere_clinica': True},
+    Roles.DOCTOR: {'nombre': 'Médico', 'requiere_clinica': True},
+    Roles.RECEPTIONIST: {'nombre': 'Recepción', 'requiere_clinica': True},
+}
 
-# catálogo de permisos granulares por rol (prompt.md §7). se amplía a medida que se
-# incorporan módulos futuros (citas, facturación, historia...) sin tocar nunca las
-# vistas/permission classes que consultan `rol_tiene_permiso()`.
+# catálogo de permisos granulares del dominio (prompt.md §7) y qué rol (por código) los
+# concede; se amplía a medida que se incorporan módulos futuros (citas, facturación,
+# historia...) sin tocar nunca las vistas/permission classes que consultan
+# `usuario_tiene_permiso()`/`usuario_tiene_permiso_generico()`.
 PERMISOS_POR_ROL = {
-    Roles.SUPERADMIN: {'*'},
     Roles.GROUP_ADMIN: {
         'users.manage',
         'groups.view', 'groups.manage',
@@ -52,11 +71,6 @@ PERMISOS_POR_ROL = {
     },
 }
 
-
-def rol_tiene_permiso(rol, permiso):
-    """indica si `rol` concede acceso al permiso granular `permiso` (ej. "patients.view").
-
-    `SUPERADMIN` tiene el comodín `*`: acceso a cualquier permiso presente o futuro.
-    """
-    permisos = PERMISOS_POR_ROL.get(rol, set())
-    return '*' in permisos or permiso in permisos
+# catálogo plano de codenames de `Permission` a crear en `PermisoPersonalizado` (unión de
+# todos los permisos concedidos arriba).
+CATALOGO_PERMISOS = {permiso for permisos in PERMISOS_POR_ROL.values() for permiso in permisos}

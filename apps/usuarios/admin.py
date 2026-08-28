@@ -1,7 +1,28 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import GroupAdmin, UserAdmin
+from django.contrib.auth.models import Group
 
-from apps.usuarios.models import CustomUser, UsuarioClinica
+from apps.usuarios.models import CustomUser, Rol, RolPerfil, UsuarioClinica
+
+# `Rol` es un proxy de `Group` (ver models.py): desregistramos el `Group` "de serie" para
+# no tener dos secciones "Grupos" en el admin (una sería en realidad el catálogo de roles).
+admin.site.unregister(Group)
+
+
+class RolPerfilInline(admin.StackedInline):
+    """código estable y si el rol requiere clínica, editable desde la propia ficha del rol."""
+
+    model = RolPerfil
+    can_delete = False
+
+
+@admin.register(Rol)
+class RolAdmin(GroupAdmin):
+    """reutiliza el admin estándar de `Group` (incluida la gestión de permisos m2m)
+    sobre el proxy `Rol`."""
+
+    inlines = [RolPerfilInline]
+    search_fields = ['name']
 
 
 class UsuarioClinicaInline(admin.TabularInline):
@@ -9,7 +30,7 @@ class UsuarioClinicaInline(admin.TabularInline):
 
     model = UsuarioClinica
     extra = 1
-    autocomplete_fields = ['clinica']
+    autocomplete_fields = ['clinica', 'rol']
 
 
 @admin.register(CustomUser)
@@ -36,4 +57,4 @@ class UsuarioClinicaAdmin(admin.ModelAdmin):
     list_display = ['usuario', 'clinica', 'rol', 'is_active']
     list_filter = ['rol', 'is_active', 'clinica__grupo']
     search_fields = ['usuario__username', 'clinica__nombre']
-    autocomplete_fields = ['usuario', 'clinica']
+    autocomplete_fields = ['usuario', 'clinica', 'rol']

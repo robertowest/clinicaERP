@@ -15,7 +15,12 @@ from apps.organizacion.services import (
 )
 from apps.usuarios.models import CustomUser
 from apps.usuarios.roles import Roles
-from apps.usuarios.services import asignar_rol, crear_usuario, listar_asignaciones
+from apps.usuarios.services import (
+    asignar_rol,
+    crear_usuario,
+    listar_asignaciones,
+    obtener_rol_por_codigo,
+)
 
 DEMO_PASSWORD = 'demo'
 
@@ -25,7 +30,8 @@ USUARIOS_DEMO = [
     ('atenea.admin', Roles.GROUP_ADMIN, None),
     ('atenea.aldaia.admin', Roles.CLINIC_ADMIN, 'ALDAIA'),
     ('atenea.aldaia.doctor', Roles.DOCTOR, 'ALDAIA'),
-    ('atenea.torrent.recepcion', Roles.RECEPTIONIST, 'TORRENT'),
+    ('atenea.recepcion', Roles.RECEPTIONIST, 'ALDAIA'),
+    ('atenea.recepcion', Roles.RECEPTIONIST, 'TORRENT'),
     ('atenea.eliana.doctor', Roles.DOCTOR, 'ELIANA'),
 ]
 
@@ -121,7 +127,8 @@ class Command(BaseCommand):
                 usuario = crear_usuario(username=username, password=DEMO_PASSWORD, grupo=grupo)
                 self.stdout.write(self.style.SUCCESS(f'Usuario de demo creado: {usuario}'))
             clinica = clinicas[codigo_clinica] if codigo_clinica else None
+            rol_obj = obtener_rol_por_codigo(rol)
             asignaciones = listar_asignaciones(usuario=usuario)
-            if not asignaciones.filter(clinica=clinica, rol=rol).exists():
-                asignar_rol(usuario=usuario, rol=rol, clinica=clinica)
+            if not asignaciones.filter(clinica=clinica, rol=rol_obj).exists():
+                asignar_rol(usuario=usuario, rol=rol_obj, clinica=clinica)
                 self.stdout.write(f'  Rol asignado: {usuario} · {rol} ({clinica or "grupo"})')

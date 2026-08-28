@@ -3,6 +3,7 @@ from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from apps.organizacion.models import Grupo
+from apps.usuarios import services
 from apps.usuarios.models import CustomUser, UsuarioClinica
 from apps.usuarios.roles import Roles
 
@@ -29,15 +30,18 @@ class UsuarioClinicaModelTests(TestCase):
         )
 
     def test_permite_clinica_nula_para_rol_de_grupo(self):
-        asignacion = UsuarioClinica.objects.create(usuario=self.usuario, rol=Roles.GROUP_ADMIN)
+        rol = services.obtener_rol_por_codigo(Roles.GROUP_ADMIN)
+        asignacion = UsuarioClinica.objects.create(usuario=self.usuario, rol=rol)
         self.assertIsNone(asignacion.clinica)
 
     def test_unique_constraint_usuario_clinica(self):
         from apps.organizacion.models import Clinica
 
         clinica = Clinica.objects.create(grupo=self.grupo, nombre='Aldaia', codigo='ALD')
-        UsuarioClinica.objects.create(usuario=self.usuario, clinica=clinica, rol=Roles.DOCTOR)
+        rol_doctor = services.obtener_rol_por_codigo(Roles.DOCTOR)
+        rol_clinic_admin = services.obtener_rol_por_codigo(Roles.CLINIC_ADMIN)
+        UsuarioClinica.objects.create(usuario=self.usuario, clinica=clinica, rol=rol_doctor)
         with self.assertRaises(IntegrityError), transaction.atomic():
             UsuarioClinica.objects.create(
-                usuario=self.usuario, clinica=clinica, rol=Roles.CLINIC_ADMIN,
+                usuario=self.usuario, clinica=clinica, rol=rol_clinic_admin,
             )

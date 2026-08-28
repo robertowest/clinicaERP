@@ -89,9 +89,10 @@ class UsuarioAccesosViewTests(TestCase):
         self.client.force_login(self.staff)
 
     def test_asigna_rol_a_clinica(self):
+        rol_doctor = services.obtener_rol_por_codigo(Roles.DOCTOR)
         respuesta = self.client.post(
             reverse('usuarios:usuario-acceso-crear', args=[self.usuario.pk]),
-            {'clinica': self.clinica.pk, 'rol': Roles.DOCTOR},
+            {'clinica': self.clinica.pk, 'rol': rol_doctor.pk},
         )
         self.assertEqual(respuesta.status_code, 302)
         self.assertTrue(

@@ -11,8 +11,8 @@ from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from apps.organizacion.services import listar_clinicas, listar_grupos
+from apps.usuarios import services
 from apps.usuarios.models import CustomUser, UsuarioClinica
-from apps.usuarios.roles import Roles
 
 
 class UsuarioForm(forms.ModelForm):
@@ -68,8 +68,6 @@ class UsuarioClinicaForm(forms.ModelForm):
     la validación de fondo (rol vs. clínica) vive en `services.asignar_rol`.
     """
 
-    rol = forms.ChoiceField(label='rol', choices=Roles.choices)
-
     class Meta:
         model = UsuarioClinica
         fields = ['clinica', 'rol']
@@ -77,6 +75,7 @@ class UsuarioClinicaForm(forms.ModelForm):
     def __init__(self, *args, usuario=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['clinica'].required = False
+        self.fields['rol'].queryset = services.listar_roles()
         if usuario is not None:
             self.fields['clinica'].queryset = listar_clinicas(grupo=usuario.grupo)
         self.helper = FormHelper(self)

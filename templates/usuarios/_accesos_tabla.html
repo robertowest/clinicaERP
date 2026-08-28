@@ -12,7 +12,7 @@
             {% for asignacion in asignaciones %}
                 <tr>
                     <td>{{ asignacion.clinica|default:'Grupo (todas las clínicas)' }}</td>
-                    <td>{{ asignacion.get_rol_display }}</td>
+                    <td>{{ asignacion.rol.name }}</td>
                     <td class="text-end">
                         <button type="button" class="btn btn-sm btn-outline-danger" title="Quitar acceso"
                                 hx-post="{% url 'usuarios:usuario-acceso-eliminar' usuario.pk asignacion.pk %}"
