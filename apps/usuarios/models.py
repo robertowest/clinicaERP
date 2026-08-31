@@ -9,7 +9,8 @@ from apps.core.models import BaseModel
 
 
 class CustomUser(AbstractUser):
-    """usuario personalizado del sistema; sustituye al `User` estándar de django.
+    """
+    usuario personalizado del sistema; sustituye al `User` estándar de django.
 
     `grupo` es nullable: solo queda vacío para el superadministrador de plataforma
     (`is_superuser=True`), que opera sobre varios grupos a la vez desde el django admin.
@@ -35,7 +36,8 @@ class CustomUser(AbstractUser):
 
 
 class Rol(Group):
-    """un rol del sistema es un `django.contrib.auth.models.Group`: se reutiliza tal cual
+    """
+    un rol del sistema es un `django.contrib.auth.models.Group`: se reutiliza tal cual
     `auth_group`/`auth_group_permissions`/`auth_permission` (gestionables desde el django
     admin sin tocar código ni redesplegar) en vez de un catálogo de roles/permisos
     hardcodeado en python.
@@ -74,7 +76,8 @@ class PermisoPersonalizado(models.Model):
 
 
 class RolPerfil(models.Model):
-    """metadatos de un `Rol` que `Group` no puede modelar (no es abstracto, no admite
+    """
+    metadatos de un `Rol` que `Group` no puede modelar (no es abstracto, no admite
     campos por herencia): un código estable para resolverlo sin depender de `Group.name`
     (texto libre, editable desde el admin) y si el rol necesita una clínica concreta.
     """
@@ -104,7 +107,8 @@ class RolPerfil(models.Model):
 
 
 class UsuarioClinica(BaseModel):
-    """rol de un usuario en una clínica concreta.
+    """
+    rol de un usuario en una clínica concreta.
 
     el rol se guarda en esta relación, no como campo único en `CustomUser`, porque
     `CLINIC_ADMIN`/`DOCTOR`/`RECEPTIONIST` son roles ligados a una clínica (un usuario

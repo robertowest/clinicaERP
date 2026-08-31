@@ -1,23 +1,27 @@
+{% load permisos %}
 <nav class="erp-sidebar">
     <div class="erp-brand">
         <i class="bi bi-hospital"></i>
         <span>ERP Clínica</span>
     </div>
-    <div class="nav-section-title">Organización</div>
-    <div class="nav flex-column">
-        <a class="nav-link {% if request.resolver_match.url_name == 'grupo-list' %}active{% endif %}"
-        href="{% url 'organizacion:grupo-list' %}">
-            <i class="bi bi-diagram-3"></i> Grupos
-        </a>
-        <a class="nav-link {% if request.resolver_match.url_name == 'clinica-list' %}active{% endif %}"
-        href="{% url 'organizacion:clinica-list' %}">
-            <i class="bi bi-building"></i> Clínicas
-        </a>
-        <a class="nav-link {% if request.resolver_match.url_name == 'especialidad-list' %}active{% endif %}"
-        href="{% url 'organizacion:especialidad-list' %}">
-            <i class="bi bi-clipboard2-pulse"></i> Especialidades
-        </a>
-    </div>
+
+    {% if request.user|tiene_permiso_o_staff:permiso_editar %}
+        <div class="nav-section-title">Organización</div>
+        <div class="nav flex-column">
+            <a class="nav-link {% if request.resolver_match.url_name == 'grupo-list' %}active{% endif %}"
+            href="{% url 'organizacion:grupo-list' %}">
+                <i class="bi bi-diagram-3"></i> Grupos
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'clinica-list' %}active{% endif %}"
+            href="{% url 'organizacion:clinica-list' %}">
+                <i class="bi bi-building"></i> Clínicas
+            </a>
+            <a class="nav-link {% if request.resolver_match.url_name == 'especialidad-list' %}active{% endif %}"
+            href="{% url 'organizacion:especialidad-list' %}">
+                <i class="bi bi-clipboard2-pulse"></i> Especialidades
+            </a>
+        </div>
+    {% endif %}
 
     <div class="nav-section-title">Pacientes</div>
     <div class="nav flex-column">

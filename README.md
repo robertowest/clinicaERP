@@ -1,27 +1,14 @@
 # ERP Clínica — Backend
 
-Backend de un ERP clínico multi-sede: gestión de grupos empresariales, clínicas, usuarios
-con roles por clínica, pacientes y médicos, con aislamiento estricto de datos entre grupos
-(multi-tenant). API REST (DRF + JWT) y UI server-rendered (HTMX + Bootstrap5) sobre los
-mismos modelos y la misma capa de servicios.
+Backend de un ERP clínico multi-sede: gestión de grupos empresariales, clínicas, usuarios con roles por clínica, pacientes y médicos, con aislamiento estricto de datos entre grupos (multi-tenant). 
+API REST (DRF + JWT) y UI server-rendered (HTMX + Bootstrap5) sobre los mismos modelos y la misma capa de servicios.
 
 ## Arquitectura
 
-- **Stack**: Django 5, Django REST Framework, PostgreSQL (producción) / SQLite (desarrollo
-  local y tests), `djangorestframework-simplejwt`, `django-filter`, `django-tables2`,
-  `django-crispy-forms` + `crispy-bootstrap5`, HTMX, `drf-spectacular`, `django-cors-headers`.
-- **Multi-tenant por `grupo_id`** (shared database, sin BD por tenant): ninguna consulta
-  puede cruzar grupos, ni por queryset ni por id directo. El aislamiento se resuelve una
-  única vez por app en `services.py` (`listar_X_visibles_para`/`obtener_X_visible_para`),
-  nunca repitiendo `filter(grupo=...)` en vistas o serializers.
-- **Apps**: `core` (modelos base, sin lógica de negocio), `organizacion` (Grupo, Clínica,
-  Especialidad), `usuarios` (`CustomUser`, roles sobre `Group`/`Permission` de Django, JWT),
-  `pacientes`, `medicos` (Médico + especialidad por clínica).
-- **Toda la lógica de negocio vive en `services.py`** de cada app: vistas, viewsets,
-  serializers, filtros y tablas nunca acceden al ORM directamente (excepción: `admin.py`).
-
-Diseño completo en [`ARQUITECTURA.md`](ARQUITECTURA.md); guía de convenciones para
-contribuir en [`CLAUDE.md`](CLAUDE.md).
+- **Stack**: Django 5, Django REST Framework, PostgreSQL (producción) / SQLite (desarrollo local y tests), `djangorestframework-simplejwt`, `django-filter`, `django-tables2`, `django-crispy-forms` + `crispy-bootstrap5`, HTMX, `drf-spectacular`, `django-cors-headers`.
+- **Multi-tenant por `grupo_id`** (shared database, sin BD por tenant): ninguna consulta puede cruzar grupos, ni por queryset ni por id directo. El aislamiento se resuelve una única vez por app en `services.py`  (`listar_X_visibles_para`/`obtener_X_visible_para`), nunca repitiendo `filter(grupo=...)` en vistas o serializers.
+- **Apps**: `core` (modelos base, sin lógica de negocio), `organizacion` (Grupo, Clínica, Especialidad), `usuarios` (`CustomUser`, roles sobre `Group`/`Permission` de Django, JWT), `pacientes`, `medicos` (Médico + especialidad por clínica).
+- **Toda la lógica de negocio vive en `services.py`** de cada app: vistas, viewsets, serializers, filtros y tablas nunca acceden al ORM directamente (excepción: `admin.py`).
 
 ## Requisitos
 
@@ -42,8 +29,7 @@ cp .env.example .env      # ajustar SECRET_KEY y credenciales si hace falta
 docker compose up --build
 ```
 
-Levanta PostgreSQL + el backend (gunicorn, `config.settings.production`), aplicando
-migraciones y `collectstatic` automáticamente en el arranque (ver `docker-entrypoint.sh`).
+Levanta PostgreSQL + el backend (gunicorn, `config.settings.production`), aplicando migraciones y `collectstatic` automáticamente en el arranque (ver `docker-entrypoint.sh`).
 Accesible en `http://localhost:8000`.
 
 ### En local sin Docker
@@ -56,8 +42,7 @@ python manage.py seed
 python manage.py runserver
 ```
 
-Usa `config.settings.development` (SQLite, `DEBUG=True`) por defecto — no requiere
-PostgreSQL levantado.
+Usa `config.settings.development` (SQLite, `DEBUG=True`) por defecto — no requiere PostgreSQL levantado.
 
 ## Variables de entorno
 
@@ -113,11 +98,8 @@ Comando idempotente (se puede ejecutar varias veces sin duplicar datos). Crea:
 
 - Superusuario `superadmin`.
 - Grupo **Atenea** con sus clínicas (Aldaia, Torrent, Eliana) y el catálogo de especialidades.
-- Usuarios de demo con roles (`atenea.admin` GROUP_ADMIN, `atenea.aldaia.admin`
-  CLINIC_ADMIN, `atenea.aldaia.doctor`/`atenea.eliana.doctor` DOCTOR, `atenea.recepcion`
-  RECEPTIONIST en dos clínicas).
-- Médicos (ligados a los usuarios `DOCTOR`, con especialidad asignada por clínica) y
-  varios pacientes de ejemplo.
+- Usuarios de demo con roles (`atenea.admin` GROUP_ADMIN, `atenea.aldaia.admin` CLINIC_ADMIN, `atenea.aldaia.doctor`/`atenea.eliana.doctor` DOCTOR, `atenea.recepcion` RECEPTIONIST en dos clínicas).
+- Médicos (ligados a los usuarios `DOCTOR`, con especialidad asignada por clínica) y varios pacientes de ejemplo.
 
 **Contraseña de todos los usuarios de demo (incluido `superadmin`): `DemoClinica2026`.**
 
@@ -126,8 +108,7 @@ Comando idempotente (se puede ejecutar varias veces sin duplicar datos). Crea:
 - Docker: `docker compose up --build` → `http://localhost:8000`.
 - Local: `python manage.py migrate && python manage.py seed && python manage.py runserver`.
 
-Acceso: `/admin/`, `/api/v1/`, `/api/docs/` (Swagger UI), `/api/redoc/`, `/api/schema/`
-(OpenAPI JSON).
+Acceso: `/admin/`, `/api/v1/`, `/api/docs/` (Swagger UI), `/api/redoc/`, `/api/schema/` (OpenAPI JSON).
 
 ## Tests
 
@@ -137,11 +118,7 @@ python manage.py makemigrations --check
 python manage.py test
 ```
 
-Incluye tests por app (modelos, servicios, API, vistas HTML) y tests de integración
-cross-app en `tests/` (aislamiento multi-tenant de punta a punta vía JWT real, smoke test
-de infraestructura). El aislamiento multi-tenant —que un usuario del Grupo A no pueda leer
-ni resolver por id directo un recurso del Grupo B— está cubierto explícitamente en cada app
-y en `tests/test_integracion_multi_tenant.py`.
+Incluye tests por app (modelos, servicios, API, vistas HTML) y tests de integración cross-app en `tests/` (aislamiento multi-tenant de punta a punta vía JWT real, smoke test de infraestructura). El aislamiento multi-tenant —que un usuario del Grupo A no pueda leer ni resolver por id directo un recurso del Grupo B— está cubierto explícitamente en cada app y en `tests/test_integracion_multi_tenant.py`.
 
 ## Endpoints principales
 
@@ -164,8 +141,7 @@ Recursos (todos requieren JWT salvo indicación contraria; permisos granulares p
 | `/api/v1/pacientes/` | Pacientes |
 | `/api/v1/medicos/` | Médicos |
 
-Documentación: `/api/schema/` (OpenAPI JSON), `/api/docs/` (Swagger UI), `/api/redoc/`
-(ReDoc) — accesibles sin autenticación.
+Documentación: `/api/schema/` (OpenAPI JSON), `/api/docs/` (Swagger UI), `/api/redoc/` (ReDoc) — accesibles sin autenticación.
 
 ### Ejemplos `curl`
 

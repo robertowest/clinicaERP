@@ -1,4 +1,5 @@
-"""catálogo semilla de roles y permisos granulares de la plataforma.
+"""
+catálogo semilla de roles y permisos granulares de la plataforma.
 
 los roles ya no son un `TextChoices` hardcodeado en un `CharField`: `UsuarioClinica.rol`
 es un fk a `Rol` (proxy de `django.contrib.auth.models.Group`, ver `models.py`), y sus
@@ -18,7 +19,8 @@ rol/string sueltos por su cuenta (punto único de autorización, arquitectura.md
 
 
 class Roles:
-    """códigos estables de los roles iniciales del sistema (`RolPerfil.codigo`).
+    """
+    códigos estables de los roles iniciales del sistema (`RolPerfil.codigo`).
 
     el antiguo `SUPERADMIN` se retira como rol asignable: ya lo cubre `CustomUser.is_superuser`,
     que `usuario_tiene_permiso()`/`usuario_tiene_permiso_generico()` comprueban antes que
@@ -75,6 +77,5 @@ PERMISOS_POR_ROL = {
     },
 }
 
-# catálogo plano de codenames de `Permission` a crear en `PermisoPersonalizado` (unión de
-# todos los permisos concedidos arriba).
+# catálogo plano de codenames de `Permission` a crear en `PermisoPersonalizado` (unión de todos los permisos concedidos arriba).
 CATALOGO_PERMISOS = {permiso for permisos in PERMISOS_POR_ROL.values() for permiso in permisos}

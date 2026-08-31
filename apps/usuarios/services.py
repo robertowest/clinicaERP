@@ -1,4 +1,5 @@
-"""único punto de acceso al orm para CustomUser y UsuarioClinica.
+"""
+único punto de acceso al orm para CustomUser y UsuarioClinica.
 
 views.py, api/endpoints.py, serializers.py, filters.py y tables.py llaman
 exclusivamente a estas funciones (excepción: admin.py, ver arquitectura.md §5).
@@ -39,8 +40,8 @@ def crear_usuario(
     *, username, password, email='', grupo=None, first_name='', last_name='',
     is_staff=False, **extra,
 ):
-    """crea un usuario validando que el nombre de usuario no exista ya.
-
+    """
+    crea un usuario validando que el nombre de usuario no exista ya.
     valida la contraseña con los validadores configurados en `AUTH_PASSWORD_VALIDATORS`
     antes de guardarla (el `ModelForm`/serializer no aplican estos validadores por sí solos).
     """
@@ -54,8 +55,8 @@ def crear_usuario(
 
 
 def actualizar_usuario(usuario, **datos):
-    """actualiza los campos indicados de un usuario, validando duplicados de username.
-
+    """
+    actualiza los campos indicados de un usuario, validando duplicados de username.
     nunca recibe `password` aquí: usar `cambiar_password()` explícitamente.
     """
     username = datos.get('username')
@@ -120,7 +121,8 @@ def _resolver_rol(rol):
 
 
 def asignar_rol(*, usuario, rol, clinica=None):
-    """asigna un rol a un usuario, opcionalmente ligado a una clínica.
+    """
+    asigna un rol a un usuario, opcionalmente ligado a una clínica.
 
     `rol` acepta tanto una instancia de `Rol` como su código estable (`RolPerfil.codigo`).
 
@@ -152,7 +154,8 @@ def quitar_asignacion(asignacion):
 
 
 def listar_clinicas_de_usuario(usuario, *, rol=None):
-    """devuelve el queryset de clínicas en las que el usuario tiene un rol asignado.
+    """
+    devuelve el queryset de clínicas en las que el usuario tiene un rol asignado.
 
     si se indica `rol` (instancia o código), acota a las asignaciones con ese rol
     concreto (por ejemplo, para resolver el alcance de un `CLINIC_ADMIN`: solo las
@@ -174,7 +177,8 @@ def listar_roles_de_usuario(usuario):
 
 
 def crear_catalogo_roles():
-    """crea o actualiza en bd los roles iniciales del sistema (`roles.ROLES_INICIALES`) y
+    """
+    crea o actualiza en bd los roles iniciales del sistema (`roles.ROLES_INICIALES`) y
     sus permisos granulares (`roles.PERMISOS_POR_ROL`). idempotente: se llama tanto desde
     la migración de datos que introdujo este esquema como desde la señal `post_migrate`
     (`apps.py`) y desde `seed.py`, así que ampliar el catálogo en `roles.py` más adelante
@@ -212,7 +216,8 @@ def crear_catalogo_roles():
 
 
 def obtener_datos_me(usuario):
-    """arma el payload de `GET /api/v1/auth/me/` (prompt.md §13): usuario + grupo +
+    """
+    arma el payload de `GET /api/v1/auth/me/` (prompt.md §13): usuario + grupo +
     clínicas accesibles (con su rol) + roles.
 
     un rol de alcance grupo/plataforma (`clinica=None`) da acceso a todas las clínicas
@@ -250,8 +255,26 @@ def obtener_datos_me(usuario):
     }
 
 
+def codigos_permisos_de_usuario(usuario):
+    """devuelve el `set` de codenames de permiso que concede alguno de los roles del
+    usuario, en una única query (sin n+1). el superusuario recibe el catálogo completo.
+
+    resulta útil para exponer los permisos al template (context processor) o para
+    precalcular un mapa de permisos sin consultar `usuario_tiene_permiso()` permiso a
+    permiso.
+    """
+    if usuario.is_superuser:
+        return set(CATALOGO_PERMISOS)
+    return set(
+        UsuarioClinica.objects.filter(usuario=usuario)
+        .values_list('rol__permissions__codename', flat=True)
+        .distinct(),
+    )
+
+
 def usuario_tiene_permiso(usuario, clinica, permiso):
-    """punto único de autorización (arquitectura.md §6, problema 2): tanto la ui html
+    """
+    punto único de autorización (arquitectura.md §6, problema 2): tanto la ui html
     como la api deben resolver permisos llamando a esta función, nunca reimplementando
     la regla por su cuenta.
 
@@ -270,7 +293,8 @@ def usuario_tiene_permiso(usuario, clinica, permiso):
 
 
 def usuario_tiene_permiso_generico(usuario, permiso):
-    """comprueba si `usuario` tiene, en cualquiera de sus asignaciones (cualquier clínica o
+    """
+    comprueba si `usuario` tiene, en cualquiera de sus asignaciones (cualquier clínica o
     de alcance grupal), un rol que conceda `permiso`.
 
     usar cuando no hay una clínica concreta sobre la que resolver (listados/altas de recursos

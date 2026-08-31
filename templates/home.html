@@ -39,4 +39,48 @@
             </a>
         </div>
     </div>
+
+
+    {% if user.is_authenticated and debug %}
+        <div class="row mt-4">
+            <div class="col-lg-6 mb-lg-0 mb-4">
+                <div class="card h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6>Roles del usuario:</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        {% if roles %}
+                            <ul>
+                                {% for rol in roles %}
+                                    <li>{{ rol }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>El usuario no tiene roles asignados.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header pb-0 pt-3 bg-transparent">
+                        <h6>Permisos del usuario:</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        {% if perms %}
+                            <ul>
+                                {% for permiso, activo in perms.items %}
+                                    {% if activo %}<li>{{ permiso }}</li>{% endif %}
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>El usuario no tiene permisos asignados.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
 {% endblock %}
