@@ -3,7 +3,11 @@
         <button id="erp-toggle-sidebar" class="btn btn-sm btn-outline-secondary d-lg-none">
             <i class="bi bi-list"></i>
         </button>
-        <h1 class="h5 mb-0">{% block titulo_pagina %}{{ titulo }}{% endblock %}</h1>
+        {% if titulo %}
+            <h1 class="h5 mb-0">
+                {% block titulo_pagina %}{{ titulo }}{% endblock %}
+            </h1>
+        {% endif %}
     </div>
     {% if user.is_authenticated %}
         <div class="d-flex align-items-center gap-3">

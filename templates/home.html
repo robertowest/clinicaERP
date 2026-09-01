@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block titulo %}Inicio · ERP Clínica{% endblock %}
+
 {% block titulo_pagina %}Inicio{% endblock %}
 
 {% block content %}
+
     <div class="row g-3">
         <div class="col-md-4">
             <a href="{% url 'organizacion:grupo-list' %}" class="text-decoration-none">
@@ -39,7 +41,6 @@
             </a>
         </div>
     </div>
-
 
     {% if user.is_authenticated and debug %}
         <div class="row mt-4">
