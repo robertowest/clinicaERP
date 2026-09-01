@@ -11,9 +11,12 @@
                 {% csrf_token %}
                 {% crispy form %}
                 <div class="d-flex justify-content-end gap-2 mt-3">
-                    <a href="{{ url_cancelar }}" class="btn btn-outline-secondary">Cancelar</a>
+                    <a href="{{ url_cancelar }}"
+                       class="btn btn-outline-secondary">
+                       <i class="bi bi-box-arrow-left"></i> Cancelar
+                    </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-lg"></i> Guardar
+                        <i class="bi bi-floppy-fill"></i> Guardar
                     </button>
                 </div>
             </form>
