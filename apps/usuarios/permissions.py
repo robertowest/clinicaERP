@@ -34,8 +34,13 @@ def permiso_por_accion(*, ver, crear, actualizar, eliminar):
     esquema view/manage de `permiso_por_metodo()`.
     """
     permiso_por_verbo = {
-        'GET': ver, 'HEAD': ver, 'OPTIONS': ver,
-        'POST': crear, 'PUT': actualizar, 'PATCH': actualizar, 'DELETE': eliminar,
+        'GET': ver,
+        'HEAD': ver,
+        'OPTIONS': ver,
+        'POST': crear,
+        'PUT': actualizar,
+        'PATCH': actualizar,
+        'DELETE': eliminar,
     }
 
     class _PermisoPorAccion(permissions.BasePermission):

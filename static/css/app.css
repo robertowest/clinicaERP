@@ -128,3 +128,22 @@ body {
         margin-left: 0;
     }
 }
+
+
+.badge-activo {
+    background-color: #88cab2;
+    color: #000;
+    font-weight: bold;
+}
+
+.badge-inactivo {
+    background-color: #d58e8e;
+    color: #000;
+    font-weight: bold;
+}
+
+.badge-desactivado {
+    background-color: #c9c8c8;
+    color: #000;
+    font-weight: bold;
+}

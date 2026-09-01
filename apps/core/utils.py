@@ -6,7 +6,8 @@ class ActiveColumn(tables.Column):
     """pinta los campos booleand como badge en vez de True/False."""
 
     def render(self, value):
-        clase = 'text-bg-success' if value else 'text-bg-secondary'
+        # clase = 'text-bg-success' if value else 'text-bg-secondary'
+        clase = 'badge-activo' if value else 'badge-inactivo'
         etiqueta = 'Activo' if value else 'Inactivo'
         return mark_safe(f'<span class="badge {clase}">{etiqueta}</span>')
 
@@ -15,6 +16,7 @@ class BooleandColumn(tables.Column):
     """pinta los campos booleand como badge en vez de True/False."""
 
     def render(self, value):
-        clase = 'text-bg-success' if value else 'text-bg-secondary'
+        # clase = 'text-bg-success' if value else 'text-bg-secondary'
+        clase = 'badge-activo' if value else 'badge-desactivado'
         etiqueta = 'Sí' if value else 'No'
         return mark_safe(f'<span class="badge {clase}">{etiqueta}</span>')

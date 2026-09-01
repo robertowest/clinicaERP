@@ -7,26 +7,26 @@
             hx-select="unset"
             hx-swap="unset"
             hx-push-url="unset">
-        <i class="bi bi-eye"></i>
+        <i class="bi bi-eye-fill"></i>
     </button>
 
     {% if request.user|tiene_permiso_o_staff:permiso_editar %}
         {% if edicion_pagina_completa %}
-            <a class="btn btn-sm btn-outline-secondary"
+            <a class="btn btn-sm btn-outline-success"
                title="Editar"
                hx-boost="false"
                href="{% url url_prefix|add:'-editar' record.pk %}">
-                <i class="bi bi-pencil"></i>
+                <i class="bi bi-pencil-fill"></i>
             </a>
         {% else %}
             <button type="button" title="Editar"
-                    class="btn btn-sm btn-outline-secondary"
+                    class="btn btn-sm btn-outline-success"
                     hx-get="{% url url_prefix|add:'-editar' record.pk %}"
                     hx-target="#modal-crud-content"
                     hx-select="unset"
                     hx-swap="unset"
                     hx-push-url="unset">
-                <i class="bi bi-pencil"></i>
+                <i class="bi bi-pencil-fill"></i>
             </button>
         {% endif %}
     {% endif %}
@@ -36,7 +36,7 @@
            class="btn btn-sm btn-outline-primary"
            hx-boost="false"
            href="{% url url_gestion_accesos_name record.pk %}">
-            <i class="bi bi-key"></i>
+            <i class="bi bi-key-fill"></i>
         </a>
     {% endif %}
 
@@ -49,7 +49,7 @@
                     hx-select="unset"
                     hx-swap="unset"
                     hx-push-url="unset">
-                <i class="bi bi-slash-circle"></i>
+                <i class="bi bi-trash"></i>
             </button>
         {% else %}
             <button type="button" title="Reactivar"
