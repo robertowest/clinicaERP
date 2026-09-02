@@ -23,3 +23,7 @@ class ClinicaFueraDeGrupoError(MedicosError):
 
 class AsignacionDuplicadaError(MedicosError):
     """el médico ya tiene una especialidad asignada en esa clínica."""
+
+
+class FechasAusenciaInvalidasError(MedicosError):
+    """la fecha de fin es anterior a la fecha de inicio."""

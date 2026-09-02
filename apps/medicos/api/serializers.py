@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.medicos.models import Medico, MedicoClinicaEspecialidad
+from apps.medicos.models import Medico, MedicoAusencia, MedicoClinicaEspecialidad
 from apps.organizacion import services as organizacion_services
 from apps.usuarios import services as usuarios_services
 
@@ -50,3 +50,30 @@ class MedicoSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is not None and request.user.is_authenticated and not request.user.is_superuser:
             self.fields.pop('grupo')
+
+
+class MedicoAusenciaSerializer(serializers.ModelSerializer):
+    """serializer de ausencias de médicos: el campo `medico` se acota al grupo del usuario
+    en __init__ (mismo criterio que `MedicoSerializer`)."""
+
+    medico_nombre = serializers.CharField(source='medico.nombre_completo', read_only=True)
+    medico_grupo = serializers.CharField(source='medico.grupo.nombre', read_only=True)
+    motivo_display = serializers.CharField(source='get_motivo_display', read_only=True)
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+
+    class Meta:
+        model = MedicoAusencia
+        fields = [
+            'id', 'medico', 'medico_nombre', 'medico_grupo', 'fecha_inicio', 'fecha_fin',
+            'motivo', 'motivo_display', 'estado', 'estado_display',
+            'is_active', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request is not None and request.user.is_authenticated and not request.user.is_superuser:
+            self.fields['medico'].queryset = Medico.objects.filter(
+                grupo=request.user.grupo,
+            )

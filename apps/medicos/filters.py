@@ -1,12 +1,12 @@
 """
-filtros django-filter de medicos
+filtros django-filter de medicos y ausencias
 declaran Meta.model por diseño de la librería
 (excepción permitida a acceso directo al modelo, ver arquitectura.md §5).
 """
 import django_filters
 from django_filters.widgets import BooleanWidget
 
-from apps.medicos.models import Medico
+from apps.medicos.models import Medico, MedicoAusencia
 
 # is_active parte de BooleanWidget (no forms.Select) para conservar sus choices
 # Desconocido/Sí/No, mismo criterio que apps/pacientes/filters.py.
@@ -27,3 +27,23 @@ class MedicoFilter(django_filters.FilterSet):
     class Meta:
         model = Medico
         fields = ['nombre', 'apellido', 'colegiado', 'is_active']
+
+
+class MedicoAusenciaFilter(django_filters.FilterSet):
+    medico_nombre = django_filters.CharFilter(
+        field_name='medico__usuario__first_name', label='Médico',
+        lookup_expr='icontains',
+    )
+    colegiado = django_filters.CharFilter(
+        field_name='medico__colegiado', label='Colegiado', lookup_expr='icontains',
+    )
+    motivo = django_filters.ChoiceFilter(
+        choices=MedicoAusencia.Motivo.choices, label='Motivo',
+    )
+    estado = django_filters.ChoiceFilter(
+        choices=MedicoAusencia.Estado.choices, label='Estado',
+    )
+
+    class Meta:
+        model = MedicoAusencia
+        fields = ['medico_nombre', 'colegiado', 'motivo', 'estado']

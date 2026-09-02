@@ -1,4 +1,4 @@
-"""único punto de acceso al orm para Medico y MedicoClinicaEspecialidad.
+"""único punto de acceso al orm para Medico, MedicoClinicaEspecialidad y MedicoAusencia.
 
 views.py, api/endpoints.py, serializers.py, filters.py y tables.py llaman
 exclusivamente a estas funciones (excepción: admin.py, ver arquitectura.md §5).
@@ -10,10 +10,11 @@ from apps.medicos.exceptions import (
     AsignacionDuplicadaError,
     ClinicaFueraDeGrupoError,
     ColegiadoDuplicadoError,
+    MedicosError,
     UsuarioFueraDeGrupoError,
     UsuarioYaEsMedicoError,
 )
-from apps.medicos.models import Medico, MedicoClinicaEspecialidad
+from apps.medicos.models import Medico, MedicoAusencia, MedicoClinicaEspecialidad
 from apps.usuarios import services as usuarios_services
 
 # --- Medico -------------------------------------------------------------
@@ -162,3 +163,71 @@ def asignar_clinica_especialidad(*, medico, clinica, especialidad):
 def quitar_asignacion_clinica(asignacion):
     """elimina una asignación médico-clínica-especialidad."""
     asignacion.delete()
+
+
+# --- MedicoAusencia ---------------------------------------------------------
+
+
+def listar_ausencias(*, medico=None, grupo=None):
+    """devuelve el queryset de ausencias; filtra por médico y/o por grupo (a través de
+    `medico__grupo`, ya que `MedicoAusencia` no tiene campo `grupo` directo).
+    """
+    qs = MedicoAusencia.objects.select_related('medico', 'medico__usuario')
+    if medico is not None:
+        qs = qs.filter(medico=medico)
+    if grupo is not None:
+        qs = qs.filter(medico__grupo=grupo)
+    return qs
+
+
+def listar_ausencias_visibles_para(usuario):
+    """superusuario ve todas las ausencias; el resto ve las de su propio grupo."""
+    if usuario.is_superuser:
+        return listar_ausencias()
+    return listar_ausencias(grupo=usuario.grupo)
+
+
+def obtener_ausencia(ausencia_id, *, medico=None):
+    """devuelve una ausencia por id (opcionalmente acotada a un médico) o lanza 404."""
+    return get_object_or_404(listar_ausencias(medico=medico), pk=ausencia_id)
+
+
+def obtener_ausencia_visible_para(ausencia_id, usuario):
+    """devuelve una ausencia por id, acotada al alcance de `usuario`, o lanza 404."""
+    return get_object_or_404(listar_ausencias_visibles_para(usuario), pk=ausencia_id)
+
+
+def crear_ausencia(*, medico, fecha_inicio, fecha_fin, motivo, estado='P'):
+    """crea una ausencia validando que las fechas sean coherentes."""
+    if fecha_fin < fecha_inicio:
+        raise MedicosError('la fecha de fin no puede ser anterior a la fecha de inicio.')
+    return MedicoAusencia.objects.create(
+        medico=medico, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin,
+        motivo=motivo, estado=estado,
+    )
+
+
+def actualizar_ausencia(ausencia, **datos):
+    """actualiza los campos indicados de una ausencia, validando coherencia de fechas."""
+    fecha_inicio = datos.get('fecha_inicio', ausencia.fecha_inicio)
+    fecha_fin = datos.get('fecha_fin', ausencia.fecha_fin)
+    if fecha_fin < fecha_inicio:
+        raise MedicosError('la fecha de fin no puede ser anterior a la fecha de inicio.')
+    for campo, valor in datos.items():
+        setattr(ausencia, campo, valor)
+    ausencia.save()
+    return ausencia
+
+
+def desactivar_ausencia(ausencia):
+    """soft delete: marca la ausencia como inactiva."""
+    ausencia.is_active = False
+    ausencia.save(update_fields=['is_active', 'updated_at'])
+    return ausencia
+
+
+def reactivar_ausencia(ausencia):
+    """revierte el soft delete de una ausencia."""
+    ausencia.is_active = True
+    ausencia.save(update_fields=['is_active', 'updated_at'])
+    return ausencia

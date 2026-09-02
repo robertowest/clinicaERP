@@ -7,7 +7,10 @@ from rest_framework.test import APITestCase
 
 from apps.usuarios.models import CustomUser
 
-RECURSOS_ESPERADOS = {'grupos', 'clinicas', 'especialidades', 'usuarios', 'pacientes', 'medicos'}
+RECURSOS_ESPERADOS = {
+    'grupos', 'clinicas', 'especialidades', 'usuarios', 'pacientes', 'medicos',
+    'ausencias',
+}
 
 
 class InfraestructuraTests(APITestCase):

@@ -15,19 +15,14 @@ urlpatterns = [
     path('<int:pk>/eliminar/', views.MedicoBajaView.as_view(), name='medico-eliminar'),
     path('<int:pk>/reactivar/', views.MedicoReactivarView.as_view(), name='medico-reactivar'),
     # especialidad por clínica (MedicoClinicaEspecialidad)
-    path(
-        '<int:medico_pk>/clinicas/',
-        views.MedicoClinicasView.as_view(),
-        name='medico-clinicas',
-    ),
-    path(
-        '<int:medico_pk>/clinicas/nuevo/',
-        views.MedicoClinicaCrearView.as_view(),
-        name='medico-clinica-crear',
-    ),
-    path(
-        '<int:medico_pk>/clinicas/<int:pk>/eliminar/',
-        views.MedicoClinicaEliminarView.as_view(),
-        name='medico-clinica-eliminar',
-    ),
+    path('<int:medico_pk>/clinicas/', views.MedicoClinicasView.as_view(), name='medico-clinicas'),
+    path('<int:medico_pk>/clinicas/nuevo/', views.MedicoClinicaCrearView.as_view(), name='medico-clinica-crear'),
+    path('<int:medico_pk>/clinicas/<int:pk>/eliminar/', views.MedicoClinicaEliminarView.as_view(), name='medico-clinica-eliminar'),
+    # ausencias (MedicoAusencia)
+    path('ausencias/', views.AusenciaListView.as_view(), name='ausencia-list'),
+    path('ausencias/nueva/', views.AusenciaCreateView.as_view(), name='ausencia-crear'),
+    path('ausencias/<int:pk>/', views.AusenciaDetalleView.as_view(), name='ausencia-detalle'),
+    path('ausencias/<int:pk>/editar/', views.AusenciaUpdateView.as_view(), name='ausencia-editar'),
+    path('ausencias/<int:pk>/eliminar/', views.AusenciaBajaView.as_view(), name='ausencia-eliminar'),
+    path('ausencias/<int:pk>/reactivar/', views.AusenciaReactivarView.as_view(), name='ausencia-reactivar'),
 ]

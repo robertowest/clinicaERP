@@ -1,17 +1,17 @@
-"""formularios de medicos; el queryset de los campos relacionados se obtiene vía
+"""formularios de medicos y ausencias; el queryset de los campos relacionados se obtiene vía
 services.py, nunca de Model.objects (mismo criterio que api/serializers.py).
 
 ningún form persiste directamente: la vista llama a services.crear_medico/
-actualizar_medico en form_valid y traduce las excepciones de dominio a errores de
-formulario.
+actualizar_medico/crear_ausencia/actualizar_ausencia en form_valid y traduce las
+excepciones de dominio a errores de formulario.
 """
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Field
+from crispy_forms.layout import Field, Layout, Row
 from django import forms
 
 from apps.medicos import services
-from apps.medicos.models import Medico, MedicoClinicaEspecialidad
+from apps.medicos.models import Medico, MedicoAusencia, MedicoClinicaEspecialidad
 from apps.organizacion import services as organizacion_services
 
 
@@ -86,3 +86,37 @@ class MedicoClinicaForm(forms.ModelForm):
             )
         self.helper = FormHelper(self)
         self.helper.form_tag = False
+
+
+class MedicoAusenciaForm(forms.ModelForm):
+    """formulario de ausencia de médico: médicos y fechas son obligatorios, motivo y estado
+    tienen choices predefinidos. el queryset de `medico` se acota al grupo del usuario
+    en no-superusuario (mismo criterio que `MedicoForm`)."""
+
+    class Meta:
+        model = MedicoAusencia
+        fields = ['medico', 'fecha_inicio', 'fecha_fin', 'motivo', 'estado']
+        widgets = {
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date'}),
+            'fecha_fin': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, usuario=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if usuario is not None and not usuario.is_superuser:
+            self.fields['medico'].queryset = services.listar_medicos(
+                grupo=usuario.grupo,
+            )
+        self.helper = FormHelper(self)
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            'medico',
+            Row(
+                Field('fecha_inicio', wrapper_class='col-md-6'),
+                Field('fecha_fin', wrapper_class='col-md-6'),
+            ),
+            Row(
+                Field('motivo', wrapper_class='col-md-6'),
+                Field('estado', wrapper_class='col-md-6'),
+            ),
+        )

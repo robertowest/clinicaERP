@@ -187,3 +187,142 @@ class MedicoClinicasVistasTests(TestCase):
         respuesta = self.client.post(url_eliminar)
         self.assertRedirects(respuesta, url_clinicas)
         self.assertEqual(self.medico_a.asignaciones_clinica.count(), 0)
+
+
+class MedicoAusenciaVistasTests(TestCase):
+    """vistas html de ausencias de médicos: listado, detalle, crear/editar en modal,
+    baja y reactivar."""
+
+    def setUp(self):
+        self.grupo_a = Grupo.objects.create(nombre='Grupo A', codigo='GRA')
+        self.grupo_b = Grupo.objects.create(nombre='Grupo B', codigo='GRB')
+        self.clinica_a = Clinica.objects.create(grupo=self.grupo_a, nombre='Aldaia', codigo='ALD')
+
+        self.usuario_medico_a = CustomUser.objects.create_user(
+            username='medico_a_user', password='clave123', grupo=self.grupo_a,
+        )
+        self.usuario_medico_b = CustomUser.objects.create_user(
+            username='medico_b_user', password='clave123', grupo=self.grupo_b,
+        )
+        self.medico_a = crear_medico(
+            grupo=self.grupo_a, usuario=self.usuario_medico_a, colegiado='COL001',
+        )
+        self.medico_b = crear_medico(
+            grupo=self.grupo_b, usuario=self.usuario_medico_b, colegiado='COL001',
+        )
+
+        self.group_admin_a = CustomUser.objects.create_user(
+            username='admin_a', password='clave123', grupo=self.grupo_a,
+        )
+        usuarios_services.asignar_rol(usuario=self.group_admin_a, rol=Roles.GROUP_ADMIN)
+        self.doctor_a = CustomUser.objects.create_user(
+            username='doc_a', password='clave123', grupo=self.grupo_a,
+        )
+        usuarios_services.asignar_rol(
+            usuario=self.doctor_a, rol=Roles.DOCTOR, clinica=self.clinica_a,
+        )
+        self.sin_rol = CustomUser.objects.create_user(
+            username='ana', password='clave123', grupo=self.grupo_a,
+        )
+
+        self.ausencia_a = self.medico_a.ausencias.create(
+            fecha_inicio='2026-03-01', fecha_fin='2026-03-05',
+            motivo='vacaciones', estado='P',
+        )
+        self.ausencia_b = self.medico_b.ausencias.create(
+            fecha_inicio='2026-04-01', fecha_fin='2026-04-03',
+            motivo='baja', estado='P',
+        )
+
+    def test_anonimo_redirige_al_login(self):
+        respuesta = self.client.get(reverse('medicos:ausencia-list'))
+        self.assertRedirects(
+            respuesta, f'/login/?next={reverse("medicos:ausencia-list")}',
+        )
+
+    def test_sin_permiso_no_accede(self):
+        self.client.force_login(self.sin_rol)
+        respuesta = self.client.get(reverse('medicos:ausencia-list'))
+        self.assertEqual(respuesta.status_code, 403)
+
+    def test_group_admin_lista_solo_ausencias_de_su_grupo(self):
+        self.client.force_login(self.group_admin_a)
+        respuesta = self.client.get(reverse('medicos:ausencia-list'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertEqual(list(respuesta.context['object_list']), [self.ausencia_a])
+
+    def test_no_resuelve_por_id_directo_una_ausencia_de_otro_grupo(self):
+        self.client.force_login(self.group_admin_a)
+        respuesta = self.client.get(
+            reverse('medicos:ausencia-detalle', args=[self.ausencia_b.pk]),
+        )
+        self.assertEqual(respuesta.status_code, 404)
+
+    def test_group_admin_crea_ausencia_en_modal(self):
+        self.client.force_login(self.group_admin_a)
+        # petición HTMX: devuelve fragmento de modal
+        respuesta = self.client.get(
+            reverse('medicos:ausencia-crear'),
+            HTTP_HX_REQUEST='true',
+        )
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'hx-post')
+
+        # POST para guardar
+        datos = {
+            'medico': self.medico_a.pk, 'fecha_inicio': '2026-06-01',
+            'fecha_fin': '2026-06-10', 'motivo': 'congreso', 'estado': 'P',
+        }
+        respuesta = self.client.post(
+            reverse('medicos:ausencia-crear'), datos,
+            HTTP_HX_REQUEST='true',
+        )
+        self.assertEqual(respuesta.status_code, 204)
+        self.medico_a.ausencias.get(fecha_inicio='2026-06-01')
+
+    def test_group_admin_edita_ausencia_en_modal(self):
+        self.client.force_login(self.group_admin_a)
+        respuesta = self.client.get(
+            reverse('medicos:ausencia-editar', args=[self.ausencia_a.pk]),
+            HTTP_HX_REQUEST='true',
+        )
+        self.assertEqual(respuesta.status_code, 200)
+
+        datos = {
+            'medico': self.medico_a.pk, 'fecha_inicio': '2026-03-01',
+            'fecha_fin': '2026-03-10', 'motivo': 'vacaciones', 'estado': 'A',
+        }
+        respuesta = self.client.post(
+            reverse('medicos:ausencia-editar', args=[self.ausencia_a.pk]),
+            datos, HTTP_HX_REQUEST='true',
+        )
+        self.assertEqual(respuesta.status_code, 204)
+        self.ausencia_a.refresh_from_db()
+        self.assertEqual(self.ausencia_a.estado, 'A')
+
+    def test_baja_es_soft_delete_y_reactivar_lo_revierte(self):
+        self.client.force_login(self.group_admin_a)
+        url_baja = reverse('medicos:ausencia-eliminar', args=[self.ausencia_a.pk])
+        respuesta = self.client.post(url_baja)
+        self.assertEqual(respuesta.status_code, 302)
+        self.ausencia_a.refresh_from_db()
+        self.assertFalse(self.ausencia_a.is_active)
+
+        url_reactivar = reverse('medicos:ausencia-reactivar', args=[self.ausencia_a.pk])
+        respuesta = self.client.post(url_reactivar)
+        self.assertEqual(respuesta.status_code, 302)
+        self.ausencia_a.refresh_from_db()
+        self.assertTrue(self.ausencia_a.is_active)
+
+    def test_doctor_no_puede_crear_ni_editar_ni_dar_de_baja(self):
+        self.client.force_login(self.doctor_a)
+        respuesta = self.client.get(reverse('medicos:ausencia-crear'))
+        self.assertEqual(respuesta.status_code, 403)
+        respuesta = self.client.get(
+            reverse('medicos:ausencia-editar', args=[self.ausencia_a.pk]),
+        )
+        self.assertEqual(respuesta.status_code, 403)
+        respuesta = self.client.get(
+            reverse('medicos:ausencia-eliminar', args=[self.ausencia_a.pk]),
+        )
+        self.assertEqual(respuesta.status_code, 403)

@@ -12,8 +12,10 @@ from config.router import router
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
     path('login/', LoginView.as_view(template_name='usuarios/login.html'), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token-obtain-pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('api/v1/auth/me/', MeView.as_view(), name='auth-me'),
@@ -21,7 +23,9 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
     path('', login_required(TemplateView.as_view(template_name='home.html')), name='home'),
+
     path('organizacion/', include('apps.organizacion.urls')),
     path('usuarios/', include('apps.usuarios.urls')),
     path('pacientes/', include('apps.pacientes.urls')),

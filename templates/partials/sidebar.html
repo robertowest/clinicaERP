@@ -1,3 +1,4 @@
+{# https://icons.getbootstrap.com/ #}
 <nav class="erp-sidebar">
     <div class="erp-brand">
         <i class="bi bi-hospital"></i>
@@ -44,6 +45,12 @@
             <a class="nav-link {% if request.resolver_match.url_name == 'medico-list' %}active{% endif %}"
                href="{% url 'medicos:medico-list' %}">
                 <i class="bi bi-heart-pulse"></i> Médicos
+            </a>
+        </div>
+        <div class="nav flex-column">
+            <a class="nav-link {% if request.resolver_match.url_name == 'ausencia-list' %}active{% endif %}"
+               href="{% url 'medicos:ausencia-list' %}">
+                <i class="bi bi-calendar-x"></i> Ausencias
             </a>
         </div>
     {% endif %}

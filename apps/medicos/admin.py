@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.medicos.models import Medico, MedicoClinicaEspecialidad
+from apps.medicos.models import Medico, MedicoAusencia, MedicoClinicaEspecialidad
 
 
 class MedicoClinicaEspecialidadInline(admin.TabularInline):
@@ -31,3 +31,17 @@ class MedicoClinicaEspecialidadAdmin(admin.ModelAdmin):
     list_filter = ['clinica__grupo', 'especialidad']
     search_fields = ['medico__colegiado', 'medico__usuario__first_name', 'medico__usuario__last_name']
     autocomplete_fields = ['medico', 'clinica', 'especialidad']
+
+
+@admin.register(MedicoAusencia)
+class MedicoAusenciaAdmin(admin.ModelAdmin):
+    """administración de ausencias de médicos."""
+
+    list_display = ['medico', 'fecha_inicio', 'fecha_fin', 'motivo', 'estado', 'is_active']
+    list_filter = ['estado', 'motivo', 'is_active', 'medico__grupo']
+    search_fields = [
+        'medico__colegiado', 'medico__usuario__first_name',
+        'medico__usuario__last_name',
+    ]
+    autocomplete_fields = ['medico']
+    ordering = ['medico', 'fecha_inicio']

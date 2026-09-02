@@ -1,15 +1,16 @@
-"""viewset de la api de medicos; todo acceso al orm pasa por services.py."""
+"""viewsets de la api de medicos y ausencias; todo acceso al orm pasa por services.py."""
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 
 from apps.medicos import services
-from apps.medicos.api.serializers import MedicoSerializer
+from apps.medicos.api.serializers import MedicoAusenciaSerializer, MedicoSerializer
 from apps.medicos.exceptions import (
     ColegiadoDuplicadoError,
+    MedicosError,
     UsuarioFueraDeGrupoError,
     UsuarioYaEsMedicoError,
 )
-from apps.medicos.filters import MedicoFilter
+from apps.medicos.filters import MedicoAusenciaFilter, MedicoFilter
 from apps.usuarios.permissions import permiso_por_accion
 
 
@@ -50,3 +51,41 @@ class MedicoViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         services.desactivar_medico(instance)
+
+
+class MedicoAusenciaViewSet(viewsets.ModelViewSet):
+    """gestión de ausencias de médicos: superusuario ve todas; el resto ve las de su propio
+    grupo. permisos granulares por acción (mismo esquema que `MedicoViewSet`):
+    `doctors.view/create/update/delete`.
+    """
+
+    serializer_class = MedicoAusenciaSerializer
+    permission_classes = [permiso_por_accion(
+        ver='doctors.view', crear='doctors.create',
+        actualizar='doctors.update', eliminar='doctors.delete',
+    )]
+    filterset_class = MedicoAusenciaFilter
+    search_fields = ['medico__colegiado', 'medico__usuario__first_name', 'medico__usuario__last_name']
+    ordering_fields = ['fecha_inicio', 'created_at']
+
+    def get_queryset(self):
+        return services.listar_ausencias_visibles_para(self.request.user)
+
+    def perform_create(self, serializer):
+        datos = dict(serializer.validated_data)
+        datos.pop('is_active', None)
+        try:
+            serializer.instance = services.crear_ausencia(**datos)
+        except MedicosError as exc:
+            raise ValidationError({'detail': [str(exc)]}) from exc
+
+    def perform_update(self, serializer):
+        try:
+            serializer.instance = services.actualizar_ausencia(
+                serializer.instance, **serializer.validated_data,
+            )
+        except MedicosError as exc:
+            raise ValidationError({'detail': [str(exc)]}) from exc
+
+    def perform_destroy(self, instance):
+        services.desactivar_ausencia(instance)
