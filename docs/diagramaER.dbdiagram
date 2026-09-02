@@ -1,0 +1,344 @@
+{
+  "version": "3.0.0",
+  "darkMode": false,
+  "gridEnabling": true,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "relationshipMode": "All",
+    "tablePositions": [
+      {
+        "name": "Permission",
+        "schemaName": "public",
+        "x": -606.6839941291107,
+        "y": -64
+      },
+      {
+        "name": "Grupo",
+        "schemaName": "public",
+        "x": 120,
+        "y": -48
+      },
+      {
+        "name": "Especialidad",
+        "schemaName": "public",
+        "x": 456,
+        "y": -544
+      },
+      {
+        "name": "Clinica",
+        "schemaName": "public",
+        "x": 64,
+        "y": -616
+      },
+      {
+        "name": "CustomUser",
+        "schemaName": "public",
+        "x": -264.85596812945806,
+        "y": -128
+      },
+      {
+        "name": "RolPerfil",
+        "schemaName": "public",
+        "x": -609.8800083869846,
+        "y": -464
+      },
+      {
+        "name": "UsuarioClinica",
+        "schemaName": "public",
+        "x": -264.85596812945806,
+        "y": -464
+      },
+      {
+        "name": "Paciente",
+        "schemaName": "public",
+        "x": 496,
+        "y": 104
+      },
+      {
+        "name": "Medico",
+        "schemaName": "public",
+        "x": 781.5840011182645,
+        "y": -304
+      },
+      {
+        "name": "MedicoClinicaEspecialidad",
+        "schemaName": "public",
+        "x": 768,
+        "y": -680
+      },
+      {
+        "name": "Rol",
+        "schemaName": "public",
+        "x": -608,
+        "y": -280
+      },
+      {
+        "name": "MedicoAusencia",
+        "schemaName": "public",
+        "x": 1128,
+        "y": -336
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "especialidades"
+        ],
+        "firstTableName": "Clinica",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "nombre"
+        ],
+        "secondTableName": "Especialidad",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "grupo"
+        ],
+        "firstTableName": "Clinica",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Grupo",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "grupo"
+        ],
+        "firstTableName": "CustomUser",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Grupo",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "user_permissions"
+        ],
+        "firstTableName": "CustomUser",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "name"
+        ],
+        "secondTableName": "Permission",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "usuario"
+        ],
+        "firstTableName": "UsuarioClinica",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "CustomUser",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "clinica"
+        ],
+        "firstTableName": "UsuarioClinica",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Clinica",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "grupo"
+        ],
+        "firstTableName": "Paciente",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Grupo",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "usuario"
+        ],
+        "firstTableName": "Medico",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "CustomUser",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "grupo"
+        ],
+        "firstTableName": "Medico",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Grupo",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "medico"
+        ],
+        "firstTableName": "MedicoClinicaEspecialidad",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Medico",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "clinica"
+        ],
+        "firstTableName": "MedicoClinicaEspecialidad",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Clinica",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "especialidad"
+        ],
+        "firstTableName": "MedicoClinicaEspecialidad",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Especialidad",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "permissions"
+        ],
+        "firstTableName": "Rol",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "name"
+        ],
+        "secondTableName": "Permission",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "rol"
+        ],
+        "firstTableName": "RolPerfil",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Rol",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "rol"
+        ],
+        "firstTableName": "UsuarioClinica",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "Rol",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "groups"
+        ],
+        "firstTableName": "CustomUser",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "name"
+        ],
+        "secondTableName": "Rol",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "Medico",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "medico"
+        ],
+        "secondTableName": "MedicoAusencia",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}

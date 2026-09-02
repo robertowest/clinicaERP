@@ -1,0 +1,147 @@
+table Rol [note: "Tabla Group original de django"] {
+  id int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  name varchar [note: "primary_key : False<br>max_length : 150<br>nullable : False<br>blank : False"]
+  permissions many_to_many
+}
+
+table Permission {
+  id int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  name varchar [note: "primary_key : False<br>max_length : 255<br>nullable : False<br>blank : False"]
+  codename varchar [note: "primary_key : False<br>max_length : 100<br>nullable : False<br>blank : False"]
+}
+
+table CustomUser {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  groups many_to_many
+  grupo foreign_key
+  user_permissions many_to_many
+  password varchar [note: "primary_key : False<br>max_length : 128<br>nullable : False<br>blank : False"]
+  last_login datetime [note: "primary_key : False<br>nullable : True<br>blank : True"]
+  is_superuser boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  username varchar [note: "primary_key : False<br>max_length : 150<br>nullable : False<br>blank : False"]
+  first_name varchar [note: "primary_key : False<br>max_length : 150<br>nullable : False<br>blank : True"]
+  last_name varchar [note: "primary_key : False<br>max_length : 150<br>nullable : False<br>blank : True"]
+  email email [note: "primary_key : False<br>max_length : 254<br>nullable : False<br>blank : True"]
+  is_staff boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  date_joined datetime [note: "primary_key : False<br>nullable : False<br>blank : False"]
+}
+
+table RolPerfil {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  rol one_to_one
+  codigo varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : False"]
+  requiere_clinica boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+}
+
+table Grupo {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  nombre varchar [note: "primary_key : False<br>max_length : 50<br>nullable : False<br>blank : False"]
+  codigo varchar [note: "primary_key : False<br>max_length : 16<br>nullable : False<br>blank : False"]
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+}
+
+table Especialidad {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  nombre varchar [note: "primary_key : False<br>max_length : 60<br>nullable : False<br>blank : False"]
+  profesion varchar [note: "primary_key : False<br>max_length : 60<br>nullable : False<br>blank : False"]
+  imagen image [note: "primary_key : False<br>max_length : 100<br>nullable : True<br>blank : True"]
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+}
+
+table Clinica {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  especialidades many_to_many
+  grupo foreign_key
+  nombre varchar [note: "primary_key : False<br>max_length : 100<br>nullable : False<br>blank : False"]
+  codigo varchar [note: "primary_key : False<br>max_length : 16<br>nullable : False<br>blank : False"]
+  domicilio varchar [note: "primary_key : False<br>max_length : 255<br>nullable : False<br>blank : True"]
+  ciudad varchar [note: "primary_key : False<br>max_length : 100<br>nullable : False<br>blank : True"]
+  codigo_postal varchar [note: "primary_key : False<br>max_length : 10<br>nullable : False<br>blank : True"]
+  telefono varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : True"]
+  email email [note: "primary_key : False<br>max_length : 254<br>nullable : False<br>blank : True"]
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+}
+
+table UsuarioClinica {
+  clinica foreign_key
+  usuario foreign_key
+  rol foreign_key
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+}
+
+table Paciente {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  grupo foreign_key
+  nhc varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : False"]
+  nombre varchar [note: "primary_key : False<br>max_length : 50<br>nullable : False<br>blank : False"]
+  apellido varchar [note: "primary_key : False<br>max_length : 50<br>nullable : False<br>blank : False"]
+  documento_tipo varchar [note: "primary_key : False<br>max_length : 4<br>nullable : False<br>blank : False<br>choices : [('dni', 'DNI'), ('nie', 'NIE'), ('pass', 'Pasaporte'), ('otro', 'Otro')]"]
+  documento_numero varchar [note: "primary_key : False<br>max_length : 12<br>nullable : False<br>blank : False"]
+  fecha_nacimiento date [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  sexo varchar [note: "primary_key : False<br>max_length : 1<br>nullable : False<br>blank : False<br>choices : [('M', 'Masculino'), ('F', 'Femenino'), ('X', 'Desconocido')]"]
+  email email [note: "primary_key : False<br>max_length : 254<br>nullable : False<br>blank : True"]
+  telefono varchar [note: "primary_key : False<br>max_length : 12<br>nullable : False<br>blank : True"]
+  domicilio varchar [note: "primary_key : False<br>max_length : 255<br>nullable : False<br>blank : True"]
+  ciudad varchar [note: "primary_key : False<br>max_length : 100<br>nullable : False<br>blank : True"]
+  codigo_postal varchar [note: "primary_key : False<br>max_length : 10<br>nullable : False<br>blank : True"]
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+}
+
+table Medico {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  usuario one_to_one
+  grupo foreign_key
+  colegiado varchar [note: "primary_key : False<br>max_length : 12<br>nullable : False<br>blank : False"]
+  telefono varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : True"]
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+}
+
+table MedicoClinicaEspecialidad {
+  id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
+  medico foreign_key
+  clinica foreign_key
+  especialidad foreign_key
+  is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+  updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
+}
+
+Table MedicoAusencia {
+  id big_int
+  medico foreign_key [ref: > Medico.id]
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  motivo varchar(30) [not null, note: "vacaciones | baja | congreso | bloqueo_manual | otro"]
+  estado varchar(1) [not null, default: 'P', note: "pendiente | aprobada | rechazada"]
+}
+
+ref: Rol.permissions > Permission.name
+ref: Clinica.especialidades > Especialidad.nombre
+ref: Clinica.grupo > Grupo.id
+ref: CustomUser.grupo > Grupo.id
+ref: CustomUser.groups > Rol.name
+ref: CustomUser.user_permissions > Permission.name
+ref: RolPerfil.rol > Rol.id
+ref: UsuarioClinica.usuario > CustomUser.id
+ref: UsuarioClinica.clinica > Clinica.id
+ref: UsuarioClinica.rol > Rol.id
+ref: Paciente.grupo > Grupo.id
+ref: Medico.usuario > CustomUser.id
+ref: Medico.grupo > Grupo.id
+ref: MedicoClinicaEspecialidad.medico > Medico.id
+ref: MedicoClinicaEspecialidad.clinica > Clinica.id
+ref: MedicoClinicaEspecialidad.especialidad > Especialidad.id
