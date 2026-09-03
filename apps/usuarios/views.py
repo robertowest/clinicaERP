@@ -5,10 +5,12 @@ todo el acceso a datos pasa por services.py.
 """
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, View
+from django.views.generic import DetailView, TemplateView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -24,6 +26,61 @@ from apps.usuarios.exceptions import UsuarioDuplicadoError, UsuariosError
 from apps.usuarios.filters import UsuarioFilter
 from apps.usuarios.forms import UsuarioClinicaForm, UsuarioCreateForm, UsuarioForm
 from apps.usuarios.tables import UsuarioTable
+
+# --- Login -------------------------------------------------------------------
+
+
+class LoginPorRolView(LoginView):
+    """
+    login estándar de django (`django.contrib.auth.views.LoginView`), salvo que el
+    destino tras autenticar depende del rol del usuario (`services.url_post_login`) en
+    vez de ser siempre `LOGIN_REDIRECT_URL`.
+
+    si la petición trae `?next=` explícito (alguien llegó aquí redirigido desde una vista
+    protegida), se respeta por encima de la redirección por rol — comportamiento estándar
+    de `LoginView.get_redirect_url()`, no lo tocamos.
+
+    si el usuario no tiene ningún destino resoluble (`url_post_login()` devuelve `None`:
+    sin rol asignado, o su rol ganador no tiene `redireccion_login` configurado, o apunta
+    a un url name roto), no llega a autenticarse: se revalida el formulario con un error
+    y se vuelve a mostrar `usuarios/login.html` (ya soporta `form.non_field_errors`), sin
+    crear sesión ni redirigir a ningún sitio — evita tanto el "usuario colgado" en una
+    página sin destino como un bucle de redirección.
+    """
+
+    template_name = 'usuarios/login.html'
+
+    def form_valid(self, form):
+        if services.url_post_login(form.get_user()) is None:
+            form.add_error(
+                None,
+                'Tu usuario no tiene acceso configurado en el sistema. '
+                'Contacta con un administrador para que te asigne un rol.',
+            )
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        redirect_to = self.get_redirect_url()
+        if redirect_to:
+            return redirect_to
+        return services.url_post_login(self.request.user)
+
+
+# --- Dashboards placeholder --------------------------------------------------
+
+
+class RecepcionDashboardView(LoginRequiredMixin, TemplateView):
+    """
+    panel de recepción (destino post-login de `Roles.RECEPTIONIST`,
+    ver `services.url_post_login`). vive aquí de forma temporal, sin app propia, porque
+    hoy no hay ningún módulo de dominio "recepción" (CLAUDE.md prevé un futuro
+    `apps.paneles` para paneles por rol): cuando exista, mover esta vista/template ahí y
+    actualizar `RolPerfil.redireccion_login` de `RECEPTIONIST` en `roles.ROLES_INICIALES`.
+    """
+
+    template_name = 'usuarios/dashboard.html'
+
 
 # --- CustomUser -------------------------------------------------------------
 # gestión de usuarios restringida a staff, igual criterio que Grupo en organizacion.

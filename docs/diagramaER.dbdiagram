@@ -70,8 +70,8 @@
       {
         "name": "Rol",
         "schemaName": "public",
-        "x": -608,
-        "y": -280
+        "x": -607.5371305143199,
+        "y": -240
       },
       {
         "name": "MedicoAusencia",

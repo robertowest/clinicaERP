@@ -33,14 +33,33 @@ class Roles:
     RECEPTIONIST = 'RECEPTIONIST'
 
 
-# nombre visible (Group.name) y si el rol requiere clínica (RolPerfil.requiere_clinica),
-# por código. las claves son las mismas que apps.usuarios.roles.Roles.
+# nombre visible (Group.name), si el rol requiere clínica (RolPerfil.requiere_clinica),
+# y a qué vista redirigir tras login (RolPerfil.redireccion_login), por código.
+# las claves son las mismas que apps.usuarios.roles.Roles.
 ROLES_INICIALES = {
-    Roles.GROUP_ADMIN: {'nombre': 'Administrador de grupo', 'requiere_clinica': False},
-    Roles.CLINIC_ADMIN: {'nombre': 'Administrador de clínica', 'requiere_clinica': True},
-    Roles.DOCTOR: {'nombre': 'Médico', 'requiere_clinica': True},
-    Roles.RECEPTIONIST: {'nombre': 'Recepción', 'requiere_clinica': True},
+    Roles.GROUP_ADMIN: {
+        'nombre': 'Administrador de grupo', 'requiere_clinica': False,
+        'redireccion_login': 'home',
+    },
+    Roles.CLINIC_ADMIN: {
+        'nombre': 'Administrador de clínica', 'requiere_clinica': True,
+        'redireccion_login': 'home',
+    },
+    Roles.DOCTOR: {
+        'nombre': 'Médico', 'requiere_clinica': True,
+        'redireccion_login': 'medicos:dashboard',
+    },
+    Roles.RECEPTIONIST: {
+        'nombre': 'Recepción', 'requiere_clinica': True,
+        'redireccion_login': 'usuarios:recepcion-dashboard',
+    },
 }
+
+# orden de prioridad para decidir el destino post-login cuando un usuario tiene varios
+# roles simultáneos (ver services.url_post_login): el primero de esta tupla que el
+# usuario tenga asignado gana. GROUP_ADMIN/CLINIC_ADMIN antes que DOCTOR/RECEPTIONIST:
+# cualquier rol administrativo manda al home general, no al dashboard operativo.
+PRIORIDAD_ROLES_LOGIN = (Roles.GROUP_ADMIN, Roles.CLINIC_ADMIN, Roles.DOCTOR, Roles.RECEPTIONIST)
 
 # catálogo de permisos granulares del dominio (prompt.md §7) y qué rol (por código) los
 # concede; se amplía a medida que se incorporan módulos futuros (citas, facturación,

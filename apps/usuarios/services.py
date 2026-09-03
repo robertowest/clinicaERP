@@ -8,8 +8,10 @@ exclusivamente a estas funciones (excepción: admin.py, ver arquitectura.md §5)
 from django.contrib.auth.models import Permission
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.contenttypes.models import ContentType
+from django.db import OperationalError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.urls import NoReverseMatch, reverse
 
 from apps.organizacion.models import Clinica
 from apps.usuarios.exceptions import (
@@ -19,7 +21,9 @@ from apps.usuarios.exceptions import (
     UsuarioDuplicadoError,
 )
 from apps.usuarios.models import CustomUser, PermisoPersonalizado, Rol, RolPerfil, UsuarioClinica
-from apps.usuarios.roles import CATALOGO_PERMISOS, PERMISOS_POR_ROL, ROLES_INICIALES
+from apps.usuarios.roles import (
+    CATALOGO_PERMISOS, PERMISOS_POR_ROL, PRIORIDAD_ROLES_LOGIN, ROLES_INICIALES,
+)
 
 # --- CustomUser -------------------------------------------------------------
 
@@ -201,12 +205,24 @@ def crear_catalogo_roles():
         perfil = RolPerfil.objects.select_related('rol').filter(codigo=codigo).first()
         if perfil is None:
             rol = Rol.objects.create(name=datos['nombre'])
-            perfil = RolPerfil.objects.create(
-                rol=rol, codigo=codigo, requiere_clinica=datos['requiere_clinica'],
-            )
+            # intenta crear con redireccion_login; si el campo no existe aún
+            # (pre-migración 0005), captura TypeError y lo crea sin ese parámetro.
+            try:
+                perfil = RolPerfil.objects.create(
+                    rol=rol, codigo=codigo, requiere_clinica=datos['requiere_clinica'],
+                    redireccion_login=datos.get('redireccion_login', ''),
+                )
+            except TypeError:
+                # campo redireccion_login no existe aún; se rellenará luego en 0005.
+                perfil = RolPerfil.objects.create(
+                    rol=rol, codigo=codigo, requiere_clinica=datos['requiere_clinica'],
+                )
         else:
             rol = perfil.rol
             perfil.requiere_clinica = datos['requiere_clinica']
+            # nota: `redireccion_login` NO se sincroniza en updates, solo en creación. es una
+            # preferencia de enrutamiento que un administrador debe poder cambiar desde /admin/
+            # sin que el próximo migrate/seed se la pise (igual criterio que Rol.name).
             perfil.save(update_fields=['requiere_clinica'])
         rol.permissions.set(
             permisos_por_codename[codename] for codename in PERMISOS_POR_ROL.get(codigo, set())
@@ -306,3 +322,46 @@ def usuario_tiene_permiso_generico(usuario, permiso):
     return UsuarioClinica.objects.filter(
         usuario=usuario, rol__permissions__codename=permiso,
     ).exists()
+
+
+def obtener_rol_perfil_prioritario(usuario):
+    """
+    devuelve el `RolPerfil` que determina el destino post-login de `usuario`, según
+    `roles.PRIORIDAD_ROLES_LOGIN` (GROUP_ADMIN > CLINIC_ADMIN > DOCTOR > RECEPTIONIST):
+    el primero de esa lista que el usuario tenga asignado en alguna de sus
+    `UsuarioClinica`, sin importar en cuántas clínicas o con qué otros roles conviva.
+
+    devuelve `None` si el usuario no tiene ningún rol asignado (o solo tiene roles fuera
+    de `PRIORIDAD_ROLES_LOGIN`, caso hoy imposible con el catálogo actual pero que se
+    contempla de cara a roles futuros).
+    """
+    codigos_usuario = set(listar_roles_de_usuario(usuario))
+    for codigo in PRIORIDAD_ROLES_LOGIN:
+        if codigo in codigos_usuario:
+            return RolPerfil.objects.get(codigo=codigo)
+    return None
+
+
+def url_post_login(usuario):
+    """
+    resuelve la url a la que redirigir a `usuario` justo tras iniciar sesión (ver
+    `views.LoginPorRolView`).
+
+    - superusuario: siempre `/admin/`, sin mirar sus roles (mismo criterio que
+      `usuario_tiene_permiso()`: el superusuario es un caso aparte, no un rol).
+    - con rol: `RolPerfil.redireccion_login` del rol ganador (`obtener_rol_perfil_prioritario`).
+    - sin rol asignado, o rol ganador sin `redireccion_login` configurado, o
+      `redireccion_login` apunta a un url name que ya no existe (catálogo desincronizado
+      o valor corrupto editado a mano desde el admin): `None`. quien llama (la vista de
+      login) debe tratarlo como "sin destino": no autenticar y mostrar un mensaje, nunca
+      redirigir a una url inexistente ni dejar al usuario "colgado".
+    """
+    if usuario.is_superuser:
+        return reverse('admin:index')
+    perfil = obtener_rol_perfil_prioritario(usuario)
+    if perfil is None or not perfil.redireccion_login:
+        return None
+    try:
+        return reverse(perfil.redireccion_login)
+    except NoReverseMatch:
+        return None

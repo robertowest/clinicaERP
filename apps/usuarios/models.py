@@ -79,7 +79,8 @@ class RolPerfil(models.Model):
     """
     metadatos de un `Rol` que `Group` no puede modelar (no es abstracto, no admite
     campos por herencia): un código estable para resolverlo sin depender de `Group.name`
-    (texto libre, editable desde el admin) y si el rol necesita una clínica concreta.
+    (texto libre, editable desde el admin), si el rol necesita una clínica concreta,
+    y a qué vista redirigir tras login (ver `services.url_post_login()`).
     """
 
     rol = models.OneToOneField(
@@ -94,6 +95,12 @@ class RolPerfil(models.Model):
         'requiere clínica', default=True,
         help_text='si el rol es de alcance grupo/plataforma (ej. administrador de grupo), '
                    'desmarcar: sus asignaciones no llevan clínica concreta.',
+    )
+    redireccion_login = models.CharField(
+        'redirección tras login', max_length=100, blank=True,
+        help_text='url name de django (resuelto con reverse()) al que se redirige a un '
+                   'usuario justo tras iniciar sesión cuando este es su rol de mayor '
+                   'prioridad (ver roles.PRIORIDAD_ROLES_LOGIN); vacío = sin destino propio.',
     )
 
     class Meta:

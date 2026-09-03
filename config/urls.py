@@ -1,19 +1,20 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LogoutView
 from django.urls import include, path
 from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.usuarios.api.endpoints import MeView
+from apps.usuarios.views import LoginPorRolView
 from config.router import router
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('login/', LoginView.as_view(template_name='usuarios/login.html'), name='login'),
+    path('login/', LoginPorRolView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
 
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token-obtain-pair'),

@@ -5,10 +5,11 @@ bootstrap, y gestión de especialidad por clínica en página propia (clon del p
 """
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, View
+from django.views.generic import DetailView, TemplateView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -26,6 +27,22 @@ from apps.medicos.forms import MedicoAusenciaForm, MedicoClinicaForm, MedicoForm
 from apps.medicos.tables import MedicoAusenciaTable, MedicoTable
 from apps.usuarios.mixins import PermisoRequeridoMixin
 
+# --- Dashboards por rol ------------------------------------------------------
+
+
+class MedicoDashboardView(LoginRequiredMixin, TemplateView):
+    """
+    panel del médico (destino post-login de `Roles.DOCTOR`, ver
+    `apps.usuarios.services.url_post_login`). solo exige sesión iniciada: no hay todavía
+    contenido sensible que proteger con `doctors.view` — cuando se implemente la agenda
+    real (`citas`/`agenda`, ver CLAUDE.md §"módulos futuros") esta vista se sustituirá o
+    ganará el permiso granular que corresponda.
+    """
+
+    template_name = 'medicos/dashboard.html'
+
+
+# --- Gestión de médicos --------------------------------------------------------
 # superusuario ve todos los médicos; el resto ve los de su propio grupo (ver
 # services.listar_medicos_visibles_para). permisos granulares por acción: doctors.view
 # (list/detalle), doctors.create, doctors.update, doctors.delete (baja/reactivar).

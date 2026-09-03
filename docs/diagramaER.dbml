@@ -1,16 +1,16 @@
-table Rol [note: "Tabla Group original de django"] {
+Table Rol [note: "Tabla Group original de django"] {
   id int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   name varchar [note: "primary_key : False<br>max_length : 150<br>nullable : False<br>blank : False"]
   permissions many_to_many
 }
 
-table Permission {
+Table Permission {
   id int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   name varchar [note: "primary_key : False<br>max_length : 255<br>nullable : False<br>blank : False"]
   codename varchar [note: "primary_key : False<br>max_length : 100<br>nullable : False<br>blank : False"]
 }
 
-table CustomUser {
+Table CustomUser {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   groups many_to_many
   grupo foreign_key
@@ -27,14 +27,15 @@ table CustomUser {
   date_joined datetime [note: "primary_key : False<br>nullable : False<br>blank : False"]
 }
 
-table RolPerfil {
+Table RolPerfil {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   rol one_to_one
   codigo varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : False"]
   requiere_clinica boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
+  redireccion_login varchar [note: "redirecciona a URL al iniciar sesión"]
 }
 
-table Grupo {
+Table Grupo {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   nombre varchar [note: "primary_key : False<br>max_length : 50<br>nullable : False<br>blank : False"]
   codigo varchar [note: "primary_key : False<br>max_length : 16<br>nullable : False<br>blank : False"]
@@ -43,7 +44,7 @@ table Grupo {
   updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
 }
 
-table Especialidad {
+Table Especialidad {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   nombre varchar [note: "primary_key : False<br>max_length : 60<br>nullable : False<br>blank : False"]
   profesion varchar [note: "primary_key : False<br>max_length : 60<br>nullable : False<br>blank : False"]
@@ -53,7 +54,7 @@ table Especialidad {
   updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
 }
 
-table Clinica {
+Table Clinica {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   especialidades many_to_many
   grupo foreign_key
@@ -69,7 +70,7 @@ table Clinica {
   updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
 }
 
-table UsuarioClinica {
+Table UsuarioClinica {
   clinica foreign_key
   usuario foreign_key
   rol foreign_key
@@ -79,7 +80,7 @@ table UsuarioClinica {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
 }
 
-table Paciente {
+Table Paciente {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   grupo foreign_key
   nhc varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : False"]
@@ -99,7 +100,7 @@ table Paciente {
   updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
 }
 
-table Medico {
+Table Medico {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   usuario one_to_one
   grupo foreign_key
@@ -110,7 +111,7 @@ table Medico {
   updated_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
 }
 
-table MedicoClinicaEspecialidad {
+Table MedicoClinicaEspecialidad {
   id big_int [note: "primary_key : True<br>nullable : False<br>blank : True"]
   medico foreign_key
   clinica foreign_key
