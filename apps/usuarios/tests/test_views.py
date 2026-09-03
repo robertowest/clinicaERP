@@ -10,16 +10,47 @@ from apps.usuarios.roles import Roles
 
 class LoginViewTests(TestCase):
     def setUp(self):
-        CustomUser.objects.create_user(username='ana', password='clave-larga-123')
+        self.grupo = Grupo.objects.create(nombre='Grupo Atenea', codigo='ATN')
+        self.clinica = Clinica.objects.create(grupo=self.grupo, nombre='Aldaia', codigo='ALD')
 
-    def test_login_correcto_redirige_a_home(self):
+    def test_sin_rol_no_autentica_y_muestra_error(self):
+        """usuario sin rol asignado no puede loguear."""
+        usuario_sin_rol = CustomUser.objects.create_user(
+            username='ana', password='clave-larga-123', grupo=self.grupo,
+        )
         respuesta = self.client.post(
             reverse('login'), {'username': 'ana', 'password': 'clave-larga-123'},
+        )
+        self.assertEqual(respuesta.status_code, 200)  # se queda en login
+        self.assertFalse(respuesta.wsgi_request.user.is_authenticated)  # sin sesión
+        self.assertContains(respuesta, 'no tiene acceso configurado')  # mensaje de error
+
+    def test_doctor_redirige_a_su_dashboard(self):
+        """usuario con rol DOCTOR es redirigido a su dashboard."""
+        usuario_doctor = CustomUser.objects.create_user(
+            username='ana', password='clave-larga-123', grupo=self.grupo,
+        )
+        services.asignar_rol(usuario=usuario_doctor, rol=Roles.DOCTOR, clinica=self.clinica)
+        respuesta = self.client.post(
+            reverse('login'), {'username': 'ana', 'password': 'clave-larga-123'},
+        )
+        self.assertRedirects(respuesta, '/medicos/dashboard/')
+
+    def test_group_admin_redirige_a_home(self):
+        """usuario con rol GROUP_ADMIN es redirigido a home."""
+        usuario_admin = CustomUser.objects.create_user(
+            username='admin', password='clave-larga-123', grupo=self.grupo,
+        )
+        services.asignar_rol(usuario=usuario_admin, rol=Roles.GROUP_ADMIN)
+        respuesta = self.client.post(
+            reverse('login'), {'username': 'admin', 'password': 'clave-larga-123'},
         )
         self.assertRedirects(respuesta, '/')
 
     def test_login_incorrecto_no_autentica(self):
-        respuesta = self.client.post(reverse('login'), {'username': 'ana', 'password': 'mala'})
+        respuesta = self.client.post(
+            reverse('login'), {'username': 'ana', 'password': 'mala'},
+        )
         self.assertEqual(respuesta.status_code, 200)
         self.assertFalse(respuesta.wsgi_request.user.is_authenticated)
 

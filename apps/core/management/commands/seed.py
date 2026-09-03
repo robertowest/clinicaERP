@@ -28,7 +28,7 @@ from apps.usuarios.services import (
 
 # en desarrollo local `AUTH_PASSWORD_VALIDATORS` está desactivado (development.py), pero
 # producción (docker compose) sí los aplica: la contraseña de demo debe superarlos también.
-DEMO_PASSWORD = 'DemoClinica2026'
+DEMO_PASSWORD = 'demo'
 
 # usuarios de ejemplo por clínica (además del superadmin de plataforma):
 # username, rol, código de clínica (None = rol de alcance grupo, sin clínica).
