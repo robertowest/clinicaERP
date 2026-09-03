@@ -1,0 +1,45 @@
+{% extends 'medicos/base.html' %}
+
+{# https://doccure.dreamstechnologies.com/html/template/doctor-dashboard.html #}
+
+{% block titulo %}Mi panel · ERP Clínica{% endblock %}
+
+{% block titulo_pagina %}Mi panel{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-2">
+            <div class="col mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-0">Total de pacientes</p>
+                        <h2 class="h5 mb-1 text-body">15</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-0">Pacientes atendidos</p>
+                        <h2 class="h5 mb-1 text-body">3</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <p class="text-secondary mb-0">Pacientes restantes</p>
+                        <h2 class="h5 mb-1 text-body">12</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-10">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h5 mt-3 mb-1 text-body">Listado de pacientes</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

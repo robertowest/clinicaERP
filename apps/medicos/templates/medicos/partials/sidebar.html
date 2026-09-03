@@ -1,0 +1,174 @@
+<style>
+    .doctor-card {
+        background: #fff;
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        margin-bottom: 30px;
+    }
+    .doctor-cover {
+        height: 120px;
+        background: #9d9da1;
+        position: relative;
+        overflow: hidden;
+    }
+    .medical-pattern {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.15);
+        font-size: 40px;
+    }
+
+    .doctor-photo-wrapper {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        margin: -55px auto 0;
+        z-index: 2;
+    }
+    .doctor-photo {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 4px solid white;
+        display: block;
+    }
+
+    .doctor-online {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+
+        width: 22px;
+        height: 22px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #10b981;
+        color: white;
+        border: 3px solid white;
+        border-radius: 50%;
+
+        font-size: 11px;
+    }
+
+    .doctor-info {
+        text-align: center;
+        padding: 15px 15px 20px;
+    }
+    .doctor-info h3 {
+        margin: 5px 0 8px;
+        font-size: 20px;
+        color: #172033;
+    }
+    .doctor-info p {
+        margin: 0 0 15px;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+    .doctor-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+
+        padding: 6px 12px;
+
+        border: 1px solid #dbe2ea;
+        border-radius: 8px;
+
+        color: #475569;
+        font-size: 14px;
+    }
+    .doctor-role span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4338ca;
+    }
+</style>
+
+{# https://icons.getbootstrap.com/ #}
+<nav class="erp-sidebar">
+    <!-- Marca -->
+    <div class="erp-brand">
+        <i class="bi bi-hospital"></i>
+        <span>ERP Clínica</span>
+    </div>
+
+    <!-- Perfil del médico -->
+    <div class="doctor-card">
+        <div class="doctor-cover">
+            <div class="medical-pattern">
+                <i class="bi bi-heart-pulse"></i>
+                <i class="bi bi-hospital"></i>
+                <i class="bi bi-capsule"></i>
+                <i class="bi bi-clipboard2-pulse"></i>
+            </div>
+        </div>
+        <div class="doctor-photo-wrapper">
+            <img class="doctor-photo"
+                src="https://doccure.dreamstechnologies.com/html/template/assets/img/doctors-dashboard/doctor-profile-img.jpg"
+                alt="Doctor"
+            >
+
+            <span class="doctor-online">
+                <i class="bi bi-check"></i>
+            </span>
+        </div>
+        <div class="doctor-info text-white">
+            <h3>Dr Edalin Hendry</h3>
+            <span class="doctor-role">
+                <span></span>
+                Dentist
+            </span>
+        </div>
+    </div>
+
+    <hr class="text-white">
+
+    <!-- Menú -->
+    <!-- div class="nav-section-title">Médicos</div -->
+    <div class="nav flex-column">
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Solicitudes
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Citas
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Horarios
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Pacientes
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Especialidades
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Opiniones
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Facturas
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Mensajes
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Configuración
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Cambiar contraseña
+        </a>
+        <a class="nav-link" href="#">
+            <i class="bi bi-diagram-3"></i> Cerrar sesión
+        </a>
+    </div>
+</nav>
