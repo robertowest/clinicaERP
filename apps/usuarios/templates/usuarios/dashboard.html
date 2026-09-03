@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Mi panel · ERP Clínica{% endblock %}
+{% block titulo_pagina %}Mi panel de recepción{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h5">Bienvenido, {{ user.get_full_name|default:user.username }}</h2>
+            <p class="text-secondary mb-0">
+                Tu agenda de citas estará disponible próximamente.
+            </p>
+        </div>
+    </div>
+{% endblock %}
