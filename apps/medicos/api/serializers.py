@@ -40,7 +40,7 @@ class MedicoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medico
         fields = [
-            'id', 'grupo', 'grupo_nombre', 'usuario', 'nombre_completo', 'email', 'colegiado',
+            'id', 'grupo', 'grupo_nombre', 'usuario', 'nombre_completo', 'email', 'tratamiento', 'colegiado',
             'telefono', 'clinicas', 'is_active', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

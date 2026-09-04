@@ -13,11 +13,23 @@ class Medico(GroupOwnedModel):
     existen en `CustomUser`: `colegiado` y `telefono` profesional.
     """
 
+    class Tratamiento(models.TextChoices):
+        DR = 'Dr', 'Dr'
+        DRA = 'Dra', 'Dra'
+
     usuario = models.OneToOneField(
         'usuarios.CustomUser', verbose_name='usuario', on_delete=models.PROTECT,
         related_name='medico',
     )
     colegiado = models.CharField('n.º de colegiado', max_length=12)
+    tratamiento = models.CharField(
+        'tratamiento',
+        max_length=3,
+        choices=Tratamiento.choices,
+        null=True,
+        blank=True,
+        help_text='tratamiento formal del médico (Dr./Dra.)',
+    )
     telefono = models.CharField('teléfono', max_length=20, blank=True)
 
     class Meta:

@@ -127,11 +127,19 @@ def obtener_medico_visible_para(medico_id, usuario):
 # --- MedicoClinicaEspecialidad (especialidad por clínica) --------------------
 
 
-def listar_asignaciones_clinica(*, medico=None):
+def listar_asignaciones_clinica(*, medico=None, include_inactive=False):
     """devuelve el queryset de asignaciones médico-clínica-especialidad; filtra por médico
-    si se indica."""
+    si se indica.
+
+    por defecto solo devuelve asignaciones activas (soft delete en Fase 8, ver riesgo 1 del plan).
+    si `include_inactive=True`, devuelve todas (para admin/auditoría).
+    """
     qs = MedicoClinicaEspecialidad.objects.select_related('medico', 'clinica', 'especialidad')
-    return qs.filter(medico=medico) if medico is not None else qs.all()
+    if not include_inactive:
+        qs = qs.filter(is_active=True)
+    if medico is not None:
+        qs = qs.filter(medico=medico)
+    return qs
 
 
 def obtener_asignacion_clinica(asignacion_id, *, medico=None):
@@ -161,8 +169,14 @@ def asignar_clinica_especialidad(*, medico, clinica, especialidad):
 
 
 def quitar_asignacion_clinica(asignacion):
-    """elimina una asignación médico-clínica-especialidad."""
-    asignacion.delete()
+    """soft delete: marca una asignación médico-clínica-especialidad como inactiva.
+
+    cambiado a soft delete en Fase 8 para evitar `ProtectedError` cuando exista historial
+    de citas ligadas a esta asignación (ver plan de Fase 8, riesgo 1).
+    """
+    asignacion.is_active = False
+    asignacion.save(update_fields=['is_active', 'updated_at'])
+    return asignacion
 
 
 # --- MedicoAusencia ---------------------------------------------------------

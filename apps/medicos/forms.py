@@ -32,7 +32,7 @@ class MedicoForm(forms.ModelForm):
 
     class Meta:
         model = Medico
-        fields = ['grupo', 'usuario', 'colegiado', 'telefono']
+        fields = ['grupo', 'usuario', 'tratamiento', 'colegiado', 'telefono']
 
     def __init__(self, *args, usuario=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,8 +59,9 @@ class MedicoForm(forms.ModelForm):
             'grupo',
             'usuario',
             Row(
-                Field('colegiado', wrapper_class='col-md-6'),
-                Field('telefono', wrapper_class='col-md-6'),
+                Field('tratamiento', wrapper_class='col-2'),
+                Field('colegiado', wrapper_class='col-5'),
+                Field('telefono', wrapper_class='col-5'),
             ),
         )
 

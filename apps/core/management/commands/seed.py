@@ -33,29 +33,29 @@ DEMO_PASSWORD = 'demo'
 # usuarios de ejemplo por clínica (además del superadmin de plataforma):
 # username, rol, código de clínica (None = rol de alcance grupo, sin clínica).
 USUARIOS_DEMO = [
-    ('atenea.admin', Roles.GROUP_ADMIN, None),
-    ('atenea.aldaia.admin', Roles.CLINIC_ADMIN, 'ALDAIA'),
-    ('atenea.aldaia.doctor', Roles.DOCTOR, 'ALDAIA'),
-    ('atenea.recepcion', Roles.RECEPTIONIST, 'ALDAIA'),
-    ('atenea.recepcion', Roles.RECEPTIONIST, 'TORRENT'),
-    ('atenea.eliana.doctor', Roles.DOCTOR, 'ELIANA'),
+    ('admin',         Roles.GROUP_ADMIN,  None),
+    ('aldaia.admin',  Roles.CLINIC_ADMIN, 'ALDAIA'),
+    ('aldaia.doctor', Roles.DOCTOR,       'ALDAIA'),
+    ('recepcion',     Roles.RECEPTIONIST, 'ALDAIA'),
+    ('recepcion',     Roles.RECEPTIONIST, 'TORRENT'),
+    ('eliana.doctor', Roles.DOCTOR,       'ELIANA'),
 ]
 
 # médicos de ejemplo: username (debe estar en USUARIOS_DEMO con rol DOCTOR), colegiado,
 # nombre de la especialidad que ejerce en la clínica donde tiene asignado el rol.
 MEDICOS_DEMO = [
-    ('atenea.aldaia.doctor', 'COL-ALD-001', 'Medicina general'),
-    ('atenea.eliana.doctor', 'COL-ELI-001', 'Pediatría'),
+    ('aldaia.doctor', 'COL-ALD-001', 'Medicina general'),
+    ('eliana.doctor', 'COL-ELI-001', 'Pediatría'),
 ]
 
 # pacientes de ejemplo del grupo atenea: nhc, nombre, apellido, documento, fecha de
 # nacimiento, sexo.
 PACIENTES_DEMO = [
-    ('NHC0001', 'Marta', 'García', '11111111A', '1985-03-12', Paciente.Sexo.FEMENINO),
-    ('NHC0002', 'Javier', 'Lopez', '22222222B', '1978-07-24', Paciente.Sexo.MASCULINO),
-    ('NHC0003', 'Lucía', 'Martínez', '33333333C', '1992-11-02', Paciente.Sexo.FEMENINO),
-    ('NHC0004', 'Antonio', 'Sánchez', '44444444D', '1966-01-30', Paciente.Sexo.MASCULINO),
-    ('NHC0005', 'Elena', 'Fernández', '55555555E', '2001-09-15', Paciente.Sexo.FEMENINO),
+    ('NHC0001', 'Marta',   'García',    '11111111A', '1985-03-12', Paciente.Sexo.FEMENINO),
+    ('NHC0002', 'Javier',  'Lopez',     '22222222B', '1978-07-24', Paciente.Sexo.MASCULINO),
+    ('NHC0003', 'Lucía',   'Martínez',  '33333333C', '1992-11-02', Paciente.Sexo.FEMENINO),
+    ('NHC0004', 'Antonio', 'Sánchez',   '44444444D', '1966-01-30', Paciente.Sexo.MASCULINO),
+    ('NHC0005', 'Elena',   'Fernández', '55555555E', '2001-09-15', Paciente.Sexo.FEMENINO),
 ]
 
 # catálogo maestro de especialidades: (nombre, profesión).
@@ -82,9 +82,9 @@ ESPECIALIDADES = [
 
 # clínicas del grupo: (código, nombre, ciudad).
 CLINICAS = [
-    ('ALDAIA', 'Atenea Aldaia', 'Aldaia'),
+    ('ALDAIA',  'Atenea Aldaia',  'Aldaia'),
     ('TORRENT', 'Atenea Torrent', 'Torrent'),
-    ('ELIANA', 'Atenea Eliana', 'La Eliana'),
+    ('ELIANA',  'Atenea Eliana',  'La Eliana'),
 ]
 
 
