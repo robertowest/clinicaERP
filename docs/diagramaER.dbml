@@ -105,6 +105,7 @@ Table Medico {
   usuario one_to_one
   grupo foreign_key
   colegiado varchar [note: "primary_key : False<br>max_length : 12<br>nullable : False<br>blank : False"]
+  tratamiento varchar [note: "Dr<br>Dra<br><b>blank</b>"]
   telefono varchar [note: "primary_key : False<br>max_length : 20<br>nullable : False<br>blank : True"]
   is_active boolean [note: "primary_key : False<br>nullable : False<br>blank : False"]
   created_at datetime [note: "primary_key : False<br>nullable : False<br>blank : True"]
@@ -128,6 +129,29 @@ Table MedicoAusencia {
   fecha_fin date [not null]
   motivo varchar(30) [not null, note: "vacaciones | baja | congreso | bloqueo_manual | otro"]
   estado varchar(1) [not null, default: 'P', note: "pendiente | aprobada | rechazada"]
+}
+
+Table Programacion {
+  id big_int
+  medico_clinica_especialidad foreign_key [ref: > MedicoClinicaEspecialidad.id]
+  dia_semana smallint [note: "0-Lunes ... 6-Domingo"]
+  hora_inicio time
+  hora_fin time
+  duracion_slot_minutos smallint
+}
+
+Table Citas {
+  id big_int
+  clinica foreign_key [ref: > Clinica.id]
+  paciente foreign_key [ref: > Paciente.id]
+  medico_clinica_especialidad foreign_key [ref: > MedicoClinicaEspecialidad.id]
+  fecha_inicio date
+  fecha_fin date
+  estado smallint [note: "1: Programada<br>2: Confirmada<br>3: Atendida<br>4: Cancelada<br>5: No asistió"]
+  tipo smallint [note: "1: Primera visita<br>2: Seguimiento<br>3: Urgencia<br>4: Revision<br>5: Otro"]
+  motivo_consulta text
+  observaciones text
+  motivo_cancelacion text
 }
 
 ref: Rol.permissions > Permission.name

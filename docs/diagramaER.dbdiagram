@@ -76,8 +76,20 @@
       {
         "name": "MedicoAusencia",
         "schemaName": "public",
-        "x": 1128,
+        "x": 1096,
         "y": -336
+      },
+      {
+        "name": "Programacion",
+        "schemaName": "public",
+        "x": 1480,
+        "y": -712
+      },
+      {
+        "name": "Citas",
+        "schemaName": "public",
+        "x": 1440,
+        "y": 40
       }
     ],
     "tableGroupCollapseStates": [],
@@ -337,6 +349,92 @@
         "secondSchemaName": "public",
         "secondRelation": "*",
         "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "MedicoClinicaEspecialidad",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "medico_clinica_especialidad"
+        ],
+        "secondTableName": "Programacion",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "Clinica",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "clinica"
+        ],
+        "secondTableName": "Citas",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": [
+          {
+            "x": 389.86481392393375,
+            "y": -568
+          },
+          {
+            "x": 389.86481392393375,
+            "y": -704.2684021543985
+          },
+          {
+            "x": 1053.994077837758,
+            "y": -704.2684021543985
+          },
+          {
+            "x": 1053.994077837758,
+            "y": 120
+          }
+        ]
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "Paciente",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "paciente"
+        ],
+        "secondTableName": "Citas",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "MedicoClinicaEspecialidad",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "medico_clinica_especialidad"
+        ],
+        "secondTableName": "Citas",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": [
+          {
+            "x": 1386.05870979467,
+            "y": -632
+          },
+          {
+            "x": 1386.05870979467,
+            "y": 184
+          }
+        ]
       }
     ]
   },

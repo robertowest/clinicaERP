@@ -41,6 +41,13 @@ class MedicoDashboardView(LoginRequiredMixin, TemplateView):
 
     template_name = 'medicos/dashboard.html'
 
+    def get_context_data(self, **kwargs):
+        # 1. Obtener el contexto base (incluye kwargs de la URL)
+        context = super().get_context_data(**kwargs)
+        # context['tratamiento'] 'Dr' if self.request.user.
+        context['nombre'] = self.request.user.medico.nombre_completo
+        return context
+
 
 # --- Gestión de médicos --------------------------------------------------------
 # superusuario ve todos los médicos; el resto ve los de su propio grupo (ver
